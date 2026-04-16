@@ -22,54 +22,36 @@
       --accent-glow: rgba(245,166,35,0.15);
       --danger:      #e05555;
       --success:     #4ec87a;
+      --plugin:      #7c6af5;
+      --plugin-dim:  rgba(124,106,245,0.15);
       --font:        'JetBrains Mono', 'Cascadia Code', 'Fira Mono', monospace;
       --radius:      4px;
       --transition:  120ms ease;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html, body {
-      height: 100%;
-      background: var(--bg-0);
-      color: var(--text-0);
-      font-family: var(--font);
-      font-size: 13px;
-      line-height: 1.6;
+      height: 100%; background: var(--bg-0); color: var(--text-0);
+      font-family: var(--font); font-size: 13px; line-height: 1.6;
     }
-
     body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       opacity: 0.6;
     }
-
     #app {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 20px;
-      gap: 20px;
+      position: relative; z-index: 1; min-height: 100vh;
+      display: grid; grid-template-rows: auto 1fr auto;
+      max-width: 1200px; margin: 0 auto; padding: 24px 20px; gap: 20px;
     }
-
     header {
       display: flex; align-items: baseline; gap: 16px;
       border-bottom: 1px solid var(--border); padding-bottom: 16px;
     }
-    header h1 {
-      font-size: 18px; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--accent);
-    }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
     header span { font-size: 11px; color: var(--text-2); letter-spacing: 0.05em; }
 
-    main {
-      display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
-    }
+    main { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start; }
     @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
 
     .panel { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); }
@@ -79,13 +61,14 @@
       letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2);
     }
     .panel-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-lit); }
+    .panel-head .dot.green  { background: var(--success); }
+    .panel-head .dot.purple { background: var(--plugin); }
     .panel-body { padding: 14px; }
 
     label {
       display: block; font-size: 10px; font-weight: 500;
       letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); margin-bottom: 5px;
     }
-
     textarea, input[type="text"], input[type="password"], select {
       width: 100%; background: var(--bg-0); border: 1px solid var(--border);
       border-radius: var(--radius); color: var(--text-0); font-family: var(--font);
@@ -153,122 +136,125 @@
     .btn-secondary:hover:not(:disabled) { border-color: var(--border-lit); color: var(--text-0); }
     .btn-danger { background: rgba(224,85,85,0.12); color: var(--danger); border: 1px solid rgba(224,85,85,0.25); }
     .btn-danger:hover:not(:disabled) { background: rgba(224,85,85,0.22); }
+    .btn-plugin { background: var(--plugin-dim); color: var(--plugin); border: 1px solid rgba(124,106,245,0.3); }
+    .btn-plugin:hover:not(:disabled) { background: rgba(124,106,245,0.25); }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn-full { width: 100%; }
 
     /* ── TEXT META + COST ── */
-    .text-meta {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      gap: 12px; margin-top: 8px;
-    }
+    .text-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: 8px; }
     .text-meta-left { flex-shrink: 0; }
     .char-count { font-size: 10px; color: var(--text-2); }
     .char-count.warn { color: var(--accent); }
     .chunk-hint { font-size: 9px; color: var(--text-2); margin-top: 2px; }
-
-    .cost-box {
-      flex: 1; min-width: 0;
-      background: var(--bg-2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
-    }
+    .cost-box { flex: 1; min-width: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 11px; font-size: 10px; }
     .cost-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .cost-row + .cost-row { margin-top: 2px; }
     .cost-label { color: var(--text-2); }
     .cost-value { color: var(--text-0); font-weight: 500; }
     .cost-value.accent { color: var(--accent); }
     .cost-value.warn   { color: #f5a623bb; }
-    .cost-chunks {
-      margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border);
-      color: var(--text-2); font-size: 9px; line-height: 1.5;
-    }
+    .cost-value.free   { color: var(--success); }
+    .cost-chunks { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border); color: var(--text-2); font-size: 9px; line-height: 1.5; }
 
     /* ── PROGRESS ── */
     .progress-wrap { display: none; margin-top: 14px; }
     .progress-wrap.visible { display: block; }
-    .progress-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px; font-size: 10px; color: var(--text-1);
-    }
-    .progress-bar-track {
-      width: 100%; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%; background: var(--accent); border-radius: 2px;
-      transition: width 350ms ease; width: 0%;
-    }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 10px; color: var(--text-1); }
+    .progress-bar-track { width: 100%; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 350ms ease; width: 0%; }
     .progress-chunks { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
-    .chunk-pip {
-      width: 10px; height: 10px; border-radius: 2px;
-      background: var(--bg-3); border: 1px solid var(--border);
-      transition: all 200ms ease;
-    }
-    .chunk-pip.active  { background: var(--accent-dim); border-color: var(--accent); animation: pulse 0.8s ease-in-out infinite; }
-    .chunk-pip.done    { background: var(--success); border-color: var(--success); }
-    .chunk-pip.error   { background: var(--danger);  border-color: var(--danger); }
+    .chunk-pip { width: 10px; height: 10px; border-radius: 2px; background: var(--bg-3); border: 1px solid var(--border); transition: all 200ms ease; }
+    .chunk-pip.active { background: var(--accent-dim); border-color: var(--accent); animation: pulse 0.8s ease-in-out infinite; }
+    .chunk-pip.done   { background: var(--success); border-color: var(--success); }
+    .chunk-pip.error  { background: var(--danger);  border-color: var(--danger); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
     /* ── STATUS ── */
-    .status-bar {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: var(--radius); font-size: 12px;
-    }
+    .status-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius); font-size: 12px; }
     .status-bar.info    { background: var(--bg-2); border: 1px solid var(--border); color: var(--text-1); }
     .status-bar.loading { background: rgba(245,166,35,0.07); border: 1px solid var(--accent-dim); color: var(--accent); }
     .status-bar.success { background: rgba(78,200,122,0.07); border: 1px solid #2e7a4a; color: var(--success); }
     .status-bar.error   { background: rgba(224,85,85,0.08); border: 1px solid #7a2e2e; color: var(--danger); }
-    .spinner {
-      width: 14px; height: 14px; border: 2px solid var(--accent-dim);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.7s linear infinite; flex-shrink: 0;
-    }
+    .spinner { width: 14px; height: 14px; border: 2px solid var(--accent-dim); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── AUDIO PANEL ── */
-    .audio-panel {
-      background: var(--bg-1); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px; display: none; margin-top: 12px;
-    }
+    .audio-panel { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: none; margin-top: 12px; }
     .audio-panel.visible { display: block; }
     audio { width: 100%; margin-top: 8px; }
     .audio-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
     .audio-meta span { font-size: 10px; color: var(--text-2); }
 
     /* ── MODEL INFO ── */
-    .model-info-box {
-      margin-top: 8px; background: var(--bg-2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
-      color: var(--text-2); line-height: 1.65;
-    }
+    .model-info-box { margin-top: 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 11px; font-size: 10px; color: var(--text-2); line-height: 1.65; }
     .model-info-box strong { color: var(--text-1); }
 
     /* ── INSTRUCTIONS ── */
-    .preset-tag {
-      display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; padding: 2px 6px; border-radius: 2px;
-      background: var(--bg-3); color: var(--text-2); border: 1px solid var(--border); margin-top: 6px;
-    }
+    .preset-tag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: var(--bg-3); color: var(--text-2); border: 1px solid var(--border); margin-top: 6px; }
     textarea.instructions-area { min-height: 140px; font-size: 12px; line-height: 1.65; resize: vertical; }
-    .model-lock-notice {
-      font-size: 10px; color: var(--accent-dim);
-      background: rgba(245,166,35,0.06); border: 1px solid rgba(245,166,35,0.2);
-      border-radius: var(--radius); padding: 6px 10px; margin-top: 8px; display: none;
-    }
+    .model-lock-notice { font-size: 10px; color: var(--accent-dim); background: rgba(245,166,35,0.06); border: 1px solid rgba(245,166,35,0.2); border-radius: var(--radius); padding: 6px 10px; margin-top: 8px; display: none; }
     .model-lock-notice.visible { display: block; }
 
     /* ── MD PREVIEW ── */
-    .md-preview {
-      font-size: 11px; color: var(--text-2); padding: 6px 10px;
-      background: var(--bg-2); border: 1px solid var(--border);
-      border-radius: var(--radius); margin-top: 8px; display: none;
-    }
+    .md-preview { font-size: 11px; color: var(--text-2); padding: 6px 10px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 8px; display: none; }
     .md-preview.visible { display: block; }
 
-    footer {
-      border-top: 1px solid var(--border); padding-top: 12px;
-      font-size: 10px; color: var(--text-2);
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    /* ── PLUGIN PANEL ── */
+    .plugin-banner {
+      background: var(--plugin-dim); border: 1px solid rgba(124,106,245,0.3);
+      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
+      color: var(--plugin); margin-top: 8px; display: none;
     }
+    .plugin-banner.visible { display: block; }
+    .plugin-banner strong { color: #a99cff; }
+
+    /* Copy-command blocks */
+    .cmd-block {
+      display: flex; align-items: stretch; gap: 0;
+      background: var(--bg-0); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-top: 6px; overflow: hidden;
+    }
+    .cmd-block code {
+      flex: 1; padding: 7px 10px; font-family: var(--font); font-size: 11px;
+      color: var(--text-1); white-space: pre; overflow-x: auto;
+    }
+    .cmd-copy {
+      flex-shrink: 0; background: var(--bg-3); border: none; border-left: 1px solid var(--border);
+      color: var(--text-2); padding: 0 10px; cursor: pointer; font-size: 11px;
+      font-family: var(--font); transition: all var(--transition);
+    }
+    .cmd-copy:hover { background: var(--border); color: var(--text-0); }
+    .cmd-copy.copied { color: var(--success); }
+
+    /* Server status indicator */
+    .server-status {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: var(--radius);
+      font-size: 10px; margin-top: 8px;
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--text-2);
+    }
+    .server-status .pip {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border-lit); flex-shrink: 0;
+      transition: background 300ms;
+    }
+    .server-status.online .pip  { background: var(--success); box-shadow: 0 0 5px var(--success); }
+    .server-status.online       { border-color: #2e7a4a; color: var(--success); }
+    .server-status.offline .pip { background: var(--danger); }
+    .server-status.offline      { border-color: #7a2e2e; color: var(--danger); }
+
+    /* Plugin voice badge */
+    .voice-source-badge {
+      display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 2px;
+      font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      vertical-align: middle; margin-left: 4px;
+    }
+    .badge-cloud  { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid var(--accent-dim); }
+    .badge-local  { background: var(--plugin-dim); color: var(--plugin); border: 1px solid rgba(124,106,245,0.3); }
+
+    footer { border-top: 1px solid var(--border); padding-top: 12px; font-size: 10px; color: var(--text-2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-0); }
@@ -281,22 +267,19 @@
 
   <header>
     <h1>TTS Studio</h1>
-    <span>OpenAI Text-to-Speech · Chunking-Engine · Kostenrechner</span>
+    <span id="headerSubtitle">OpenAI Text-to-Speech · Chunking-Engine · Kostenrechner</span>
   </header>
 
   <main>
 
-    <!-- LEFT: Text + Progress + Status -->
+    <!-- LEFT -->
     <div>
       <div class="panel">
         <div class="panel-head"><div class="dot"></div>Text-Eingabe</div>
         <div class="panel-body">
           <textarea id="textInput"
             placeholder="Text hier eingeben oder einfügen — auch sehr lange Texte (Bücher, Artikel, Dokumente)…"
-            spellcheck="true"
-            oninput="updateTextMeta()"></textarea>
-
-          <!-- Char count left, cost box right -->
+            spellcheck="true" oninput="updateTextMeta()"></textarea>
           <div class="text-meta">
             <div class="text-meta-left">
               <div class="char-count" id="charCount">0 Zeichen</div>
@@ -304,7 +287,7 @@
             </div>
             <div class="cost-box">
               <div class="cost-row">
-                <span class="cost-label">Modell</span>
+                <span class="cost-label">Anbieter / Modell</span>
                 <span class="cost-value" id="costModel">—</span>
               </div>
               <div class="cost-row">
@@ -318,37 +301,32 @@
               <div class="cost-chunks" id="costChunkDetail"></div>
             </div>
           </div>
-
           <div class="md-preview" id="mdPreview">
             <strong>Vorschau (Markdown entfernt):</strong>
-            <div id="mdPreviewText" style="margin-top:4px; white-space: pre-wrap;"></div>
+            <div id="mdPreviewText" style="margin-top:4px; white-space:pre-wrap;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Progress Bar (wird bei Chunked-Jobs sichtbar) -->
+      <!-- Progress -->
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-header">
           <span id="progressLabel">Initialisiere…</span>
           <span id="progressPct" style="color:var(--accent);">0%</span>
         </div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" id="progressFill"></div>
-        </div>
-        <!-- Chunk-Pips: ein kleines Quadrat pro Chunk -->
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
         <div class="progress-chunks" id="progressChunks"></div>
       </div>
 
-      <!-- Status + Audio Output -->
+      <!-- Status + Audio -->
       <div style="margin-top:12px;">
         <div class="status-bar info" id="statusBar">
           <span>⬡</span>
-          <span id="statusText">Bereit. API-Key eingeben, Text einfügen, konvertieren.</span>
+          <span id="statusText">Bereit. Anbieter wählen, API-Key eingeben, Text einfügen, konvertieren.</span>
         </div>
         <div class="audio-panel" id="audioPanel">
-          <div class="panel-head" style="padding:0 0 10px; border:none;">
-            <div class="dot" style="background:var(--success)"></div>
-            Audio-Ausgabe
+          <div class="panel-head" style="padding:0 0 10px;border:none;">
+            <div class="dot green"></div>Audio-Ausgabe
           </div>
           <audio id="audioPlayer" controls></audio>
           <div class="audio-meta">
@@ -359,11 +337,28 @@
       </div>
     </div>
 
-    <!-- RIGHT: Settings Sidebar -->
+    <!-- RIGHT: Sidebar -->
     <aside>
 
-      <!-- API Key -->
+      <!-- Provider Selector -->
       <div class="panel">
+        <div class="panel-head"><div class="dot"></div>Anbieter</div>
+        <div class="panel-body">
+          <label>Aktiver Anbieter</label>
+          <select id="providerSelect" onchange="onProviderChange()">
+            <option value="openai">OpenAI</option>
+            <option value="plugin">Lokaler Server (Plugin)</option>
+          </select>
+          <!-- Plugin active banner -->
+          <div class="plugin-banner" id="pluginBanner">
+            <strong id="pluginBannerName">Plugin aktiv</strong>
+            <span id="pluginBannerDesc" style="display:block;margin-top:2px;color:var(--text-2);"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Key (OpenAI — hidden when plugin active) -->
+      <div class="panel gap" id="apiKeyPanel">
         <div class="panel-head"><div class="dot"></div>API-Konfiguration</div>
         <div class="panel-body">
           <label>OpenAI API Key</label>
@@ -375,8 +370,8 @@
         </div>
       </div>
 
-      <!-- Model & Voice -->
-      <div class="panel gap">
+      <!-- Model & Voice (OpenAI) -->
+      <div class="panel gap" id="openaiModelPanel">
         <div class="panel-head"><div class="dot"></div>Modell &amp; Stimme</div>
         <div class="panel-body">
           <label>Modell</label>
@@ -385,9 +380,7 @@
             <option value="tts-1-hd">tts-1-hd — HD-Qualität</option>
             <option value="gpt-4o-mini-tts">gpt-4o-mini-tts — Mini + Instructions</option>
           </select>
-          <!-- Model description + pricing -->
           <div class="model-info-box" id="modelInfoBox">–</div>
-
           <label style="margin-top:12px;">Stimme</label>
           <select id="voiceSelect" onchange="saveSettings()">
             <option value="alloy">alloy</option>
@@ -397,6 +390,63 @@
             <option value="nova">nova</option>
             <option value="shimmer">shimmer</option>
           </select>
+        </div>
+      </div>
+
+      <!-- Plugin: Voice & Server Panel -->
+      <div class="panel gap" id="pluginPanel" style="display:none;">
+        <div class="panel-head"><div class="dot purple"></div>Lokaler Server</div>
+        <div class="panel-body">
+
+          <!-- Plugin loader -->
+          <label>Plugin-Datei laden</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button class="btn btn-plugin" style="flex:1;" onclick="document.getElementById('pluginFileInput').click()">
+              📂 Plugin laden (.json)
+            </button>
+            <button class="btn btn-secondary" id="pluginUnloadBtn" onclick="unloadPlugin()" style="display:none;">✕</button>
+          </div>
+          <input type="file" id="pluginFileInput" accept=".json" style="display:none;" onchange="loadPluginFile(event)" />
+
+          <!-- Plugin voice select (appears after load) -->
+          <div id="pluginVoiceWrap" style="display:none;margin-top:12px;">
+            <label>Stimme</label>
+            <select id="pluginVoiceSelect" onchange="saveSettings()"></select>
+          </div>
+
+          <!-- Server status + test -->
+          <div class="server-status" id="serverStatus">
+            <div class="pip"></div>
+            <span id="serverStatusText">Kein Server verbunden</span>
+          </div>
+          <button class="btn btn-secondary btn-full" style="margin-top:6px;" onclick="testServerConnection()">
+            ⟳ Verbindung testen
+          </button>
+
+          <!-- Setup instructions -->
+          <div style="margin-top:14px;">
+            <label>Server einrichten</label>
+            <div style="font-size:10px;color:var(--text-2);margin-bottom:6px;">
+              Einmalig im Terminal ausführen:
+            </div>
+
+            <div style="font-size:9px;color:var(--text-2);margin-top:8px;margin-bottom:3px;">1. Abhängigkeiten installieren</div>
+            <div class="cmd-block">
+              <code>pip install flask flask-cors piper-tts</code>
+              <button class="cmd-copy" onclick="copyCmd(this, 'pip install flask flask-cors piper-tts')">Kopieren</button>
+            </div>
+
+            <div style="font-size:9px;color:var(--text-2);margin-top:8px;margin-bottom:3px;">2. Server starten</div>
+            <div class="cmd-block">
+              <code>python tts_server.py</code>
+              <button class="cmd-copy" onclick="copyCmd(this, 'python tts_server.py')">Kopieren</button>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-2);margin-top:8px;line-height:1.5;">
+              Server läuft dann auf <code style="color:var(--accent-dim);">localhost:7734</code>.
+              Dann Plugin-JSON laden und Verbindung testen.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -420,6 +470,7 @@
             <option value="opus">opus</option>
             <option value="aac">aac</option>
             <option value="flac">flac</option>
+            <option value="wav">wav — lokaler Server</option>
           </select>
           <div style="font-size:10px;color:var(--text-2);margin-top:4px;" id="formatNote"></div>
 
@@ -433,8 +484,8 @@
         </div>
       </div>
 
-      <!-- Voice Instructions -->
-      <div class="panel gap">
+      <!-- Voice Instructions (OpenAI only) -->
+      <div class="panel gap" id="instructionsPanel">
         <div class="panel-head">
           <div class="dot"></div>Voice Instructions
           <span style="margin-left:auto;font-size:9px;color:var(--accent-dim);text-transform:none;letter-spacing:0;">gpt-4o-mini-tts</span>
@@ -452,11 +503,9 @@
             <option value="dramatic">🎭 Dramatic — Lyrik, Theaterstücke, expressive Prosa</option>
           </select>
           <div class="preset-tag" id="presetTag">Eigene Konfiguration</div>
-
           <label style="margin-top:12px;">Instruktionen</label>
           <textarea class="instructions-area" id="instructionsInput"
-            placeholder="Beschreibe Tonfall, Tempo, Stil…"
-            oninput="onInstructionsEdit()"></textarea>
+            placeholder="Beschreibe Tonfall, Tempo, Stil…" oninput="onInstructionsEdit()"></textarea>
           <div style="font-size:10px;color:var(--text-2);margin-top:5px;">
             Nur für <code style="color:var(--accent-dim)">gpt-4o-mini-tts</code> aktiv.
           </div>
@@ -477,7 +526,7 @@
   </main>
 
   <footer>
-    <span>TTS Studio — keine Daten außer an die OpenAI API</span>
+    <span>TTS Studio — Daten werden nur an den gewählten Anbieter übertragen</span>
     <span id="footerSettings">–</span>
   </footer>
 
@@ -485,48 +534,36 @@
 
 <script>
   /* =====================================================
-     TTS STUDIO — Vollständige JavaScript-Logik
-     - Chunking-Engine (splitTextToChunks)
-     - Sequentielle Multi-Chunk-Verarbeitung
-     - Cancel-Flag, Rate-Limit-Retry
-     - Kostenberechnung (MODEL_INFO Pricing)
-     - Voice Instructions + Presets
-     - LocalStorage Settings (kein API Key)
+     TTS STUDIO — JavaScript
+     Provider-System: OpenAI (cloud) + Plugin (lokaler Server)
+     Plugin = generisches JSON, kein provider-spezifischer Code
   ===================================================== */
 
-  // ── GLOBALE STATE-VARIABLEN ──
-  let currentAudioBlob = null;   // aktuell geladenes Audio (für Download)
-  let currentFilename  = '';
-  let cancelRequested  = false;  // wird true wenn User "Abbrechen" klickt
+  // ── GLOBALS ──
+  let currentAudioBlob  = null;
+  let currentFilename   = '';
+  let cancelRequested   = false;
+  let activePlugin      = null;   // geladenes Plugin-Objekt oder null
 
-  // ── CHUNK-GRÖSSE ──
-  // OpenAI-Limit: 4096 Zeichen. 4000 als Sicherheitspuffer.
   const CHUNK_SIZE = 4000;
 
-  // ── MODELL-INFORMATIONEN & PREISE ──
-  // Preise in USD pro 1 Million Zeichen (Stand 2025, platform.openai.com/docs/pricing)
+  // ── OPENAI MODEL INFO ──
   const MODEL_INFO = {
     'tts-1': {
-      pricePerMChar: 15.00,
-      label:       'Standard',
-      quality:     '★★★☆☆',
-      description: 'Schnell und günstig. Leichte Qualitätskompression bei sehr langen Texten merkbar. Ideal für Notizen, Entwürfe, kurze bis mittellange Inhalte.',
+      pricePerMChar: 15.00, label: 'Standard', quality: '★★★☆☆',
+      description: 'Schnell und günstig. Ideal für Notizen, Entwürfe, kurze bis mittellange Inhalte.',
     },
     'tts-1-hd': {
-      pricePerMChar: 30.00,
-      label:       'HD-Qualität',
-      quality:     '★★★★★',
-      description: 'Beste Audioqualität, natürlichste Aussprache. Doppelter Preis. Empfohlen für finale Produktionen, Hörbücher, öffentlich veröffentlichte Inhalte.',
+      pricePerMChar: 30.00, label: 'HD-Qualität', quality: '★★★★★',
+      description: 'Beste Audioqualität. Empfohlen für finale Produktionen und Hörbücher.',
     },
     'gpt-4o-mini-tts': {
-      pricePerMChar: 15.00,
-      label:       'Mini + Instructions',
-      quality:     '★★★☆☆',
-      description: 'Unterstützt Voice Instructions (Tonfall, Stil, Tempo). Audioqualität ähnlich tts-1. Beste Wahl wenn Sprechstil-Kontrolle gewünscht ist.',
+      pricePerMChar: 15.00, label: 'Mini + Instructions', quality: '★★★☆☆',
+      description: 'Unterstützt Voice Instructions (Tonfall, Stil, Tempo). Beste Wahl für Sprechstil-Kontrolle.',
     },
   };
 
-  // ── INITIALISIERUNG ──
+  // ── INIT ──
   document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateTextMeta();
@@ -534,9 +571,147 @@
     updateModelInfo();
     updateFormatNote();
     updateFooter();
+    onProviderChange();
   });
 
-  // ── PASSWORT-TOGGLE ──
+  // ── PROVIDER SWITCH ──
+  function onProviderChange() {
+    const provider = document.getElementById('providerSelect').value;
+    const isPlugin = provider === 'plugin';
+
+    document.getElementById('apiKeyPanel').style.display      = isPlugin ? 'none' : '';
+    document.getElementById('openaiModelPanel').style.display = isPlugin ? 'none' : '';
+    document.getElementById('pluginPanel').style.display      = isPlugin ? '' : 'none';
+    document.getElementById('instructionsPanel').style.display = isPlugin ? 'none' : '';
+    document.getElementById('modelLockNotice').style.display   = isPlugin ? 'none' : '';
+
+    updateTextMeta();
+    updateFooter();
+    saveSettings();
+  }
+
+  function currentProvider() {
+    return document.getElementById('providerSelect').value;
+  }
+
+  // ── PLUGIN SYSTEM ──
+  /**
+   * Lädt eine lokal gewählte JSON-Datei als Plugin.
+   * Schema:
+   * {
+   *   "plugin_id": "my-local-tts",
+   *   "name": "Mein lokaler TTS-Server",
+   *   "description": "Piper + eigene Stimmen",
+   *   "endpoint": "http://localhost:7734",
+   *   "api_path": "/tts",            // optional, default: /tts
+   *   "chunk_size": 1500,            // optional, überschreibt default 4000
+   *   "voices": [
+   *     { "id": "de_DE-thorsten-high", "name": "Thorsten (Deutsch)", "lang": "de" },
+   *     ...
+   *   ]
+   * }
+   */
+  function loadPluginFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        // Minimal-Validierung
+        if (!data.endpoint || !Array.isArray(data.voices) || data.voices.length === 0) {
+          setStatus('error', 'Plugin-Datei ungültig: endpoint und voices[] sind Pflichtfelder.');
+          return;
+        }
+        activePlugin = data;
+        applyPlugin();
+        testServerConnection();
+        saveSettings();
+      } catch (_) {
+        setStatus('error', 'Plugin-Datei konnte nicht geparst werden (kein gültiges JSON).');
+      }
+    };
+    reader.readAsText(file);
+    // Input zurücksetzen damit dieselbe Datei erneut geladen werden kann
+    event.target.value = '';
+  }
+
+  function applyPlugin() {
+    if (!activePlugin) return;
+
+    // Banner
+    const banner = document.getElementById('pluginBanner');
+    banner.classList.add('visible');
+    document.getElementById('pluginBannerName').textContent = activePlugin.name || 'Plugin aktiv';
+    document.getElementById('pluginBannerDesc').textContent =
+      (activePlugin.description || '') + (activePlugin.endpoint ? ' · ' + activePlugin.endpoint : '');
+
+    // Stimmen-Dropdown befüllen
+    const sel = document.getElementById('pluginVoiceSelect');
+    sel.innerHTML = '';
+    (activePlugin.voices || []).forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `${v.name}${v.lang ? ' [' + v.lang + ']' : ''}`;
+      sel.appendChild(opt);
+    });
+    document.getElementById('pluginVoiceWrap').style.display = '';
+    document.getElementById('pluginUnloadBtn').style.display = '';
+
+    updateTextMeta();
+    updateFooter();
+    setStatus('info', `Plugin geladen: ${activePlugin.name}. Server-Verbindung wird geprüft…`);
+  }
+
+  function unloadPlugin() {
+    activePlugin = null;
+    document.getElementById('pluginBanner').classList.remove('visible');
+    document.getElementById('pluginVoiceWrap').style.display = 'none';
+    document.getElementById('pluginUnloadBtn').style.display = 'none';
+    setServerStatus('idle', 'Kein Plugin geladen');
+    updateTextMeta();
+    updateFooter();
+    setStatus('info', 'Plugin entfernt.');
+    saveSettings();
+  }
+
+  // ── SERVER CONNECTION TEST ──
+  async function testServerConnection() {
+    if (!activePlugin) {
+      setServerStatus('offline', 'Kein Plugin geladen');
+      return;
+    }
+    const endpoint = activePlugin.endpoint;
+    setServerStatus('idle', 'Verbinde…');
+    try {
+      const res = await fetch(endpoint + '/ping', { method: 'GET', signal: AbortSignal.timeout(4000) });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setServerStatus('online', `Verbunden · ${data.engine || activePlugin.name || endpoint}`);
+      } else {
+        setServerStatus('offline', `Server antwortet mit ${res.status}`);
+      }
+    } catch (_) {
+      setServerStatus('offline', 'Server nicht erreichbar (läuft python tts_server.py?)');
+    }
+  }
+
+  function setServerStatus(state, msg) {
+    const el = document.getElementById('serverStatus');
+    el.className = 'server-status ' + (state === 'online' ? 'online' : state === 'offline' ? 'offline' : '');
+    document.getElementById('serverStatusText').textContent = msg;
+  }
+
+  // ── COPY COMMAND BUTTONS ──
+  function copyCmd(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Kopiert';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Kopieren'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // ── PASSWORD TOGGLE ──
   function togglePw() {
     const el = document.getElementById('apiKey');
     el.type = el.type === 'password' ? 'text' : 'password';
@@ -548,20 +723,21 @@
       parseFloat(document.getElementById('speedRange').value).toFixed(2) + '×';
   }
 
-  // ── FORMAT-HINWEIS ──
+  // ── FORMAT NOTE ──
   function updateFormatNote() {
     const notes = {
       mp3:  'Empfohlen für lange Texte — Chunks werden nahtlos zusammengeführt.',
       opus: 'Kleinste Dateigröße. Chunk-Übergänge können hörbar sein.',
       aac:  'Gute Qualität. Chunk-Übergänge meist nicht hörbar.',
       flac: 'Verlustfrei, große Dateien. Chunk-Übergänge können hörbar sein.',
+      wav:  'Unkomprimiert. Empfohlen für lokale Server-Ausgabe.',
     };
     document.getElementById('formatNote').textContent =
       notes[document.getElementById('formatSelect').value] || '';
   }
   function onFormatChange() { updateFormatNote(); saveSettings(); }
 
-  // ── MODELL-INFO-BOX (Beschreibung + Preis) ──
+  // ── MODEL INFO BOX ──
   function updateModelInfo() {
     const model = document.getElementById('modelSelect').value;
     const info  = MODEL_INFO[model];
@@ -573,45 +749,56 @@
     updateCostEstimate();
   }
 
-  // ── TEXT-META: Zeichenzähler + Kosten live aktualisieren ──
+  // ── TEXT META + COST ──
   function updateTextMeta() {
     const raw  = document.getElementById('textInput').value;
     const text = document.getElementById('stripMd').checked ? stripMarkdown(raw) : raw;
     const len  = text.length;
 
-    // Zeichenzähler
     const cc = document.getElementById('charCount');
     cc.textContent = len.toLocaleString('de-DE') + ' Zeichen';
     cc.className   = 'char-count' + (len > 50000 ? ' warn' : '');
 
-    // Chunk-Hinweis
-    const hint = document.getElementById('chunkHint');
-    if (len > CHUNK_SIZE) {
-      hint.textContent = `→ ${Math.ceil(len / CHUNK_SIZE)} Chunks à max. ${CHUNK_SIZE} Zeichen`;
+    const chunkSz = (activePlugin && activePlugin.chunk_size) ? activePlugin.chunk_size : CHUNK_SIZE;
+    const hint    = document.getElementById('chunkHint');
+    if (len > chunkSz) {
+      hint.textContent = `→ ${Math.ceil(len / chunkSz)} Chunks à max. ${chunkSz} Zeichen`;
     } else {
-      hint.textContent = len > 0 ? '→ 1 API-Request' : '';
+      hint.textContent = len > 0 ? '→ 1 Request' : '';
     }
 
-    // MD-Vorschau aktualisieren
     if (document.getElementById('stripMd').checked) updateMdPreview(raw);
-
     updateCostEstimate();
   }
 
-  // ── KOSTENBERECHNUNG ──
   function updateCostEstimate() {
-    const raw   = document.getElementById('textInput').value;
-    const text  = document.getElementById('stripMd').checked ? stripMarkdown(raw) : raw;
-    const len   = text.length;
+    const raw    = document.getElementById('textInput').value;
+    const text   = document.getElementById('stripMd').checked ? stripMarkdown(raw) : raw;
+    const len    = text.length;
+    const provider = currentProvider();
+
+    if (provider === 'plugin') {
+      // Lokaler Server: kostenlos
+      document.getElementById('costModel').textContent  = activePlugin ? activePlugin.name : 'Lokaler Server';
+      document.getElementById('costChars').textContent  = len.toLocaleString('de-DE');
+      document.getElementById('costEst').textContent    = 'kostenlos';
+      document.getElementById('costEst').className      = 'cost-value free';
+      const chunkSz = (activePlugin && activePlugin.chunk_size) ? activePlugin.chunk_size : CHUNK_SIZE;
+      const chunks  = Math.ceil(len / chunkSz);
+      document.getElementById('costChunkDetail').textContent =
+        len > 0 ? `${chunks} Chunk${chunks !== 1 ? 's' : ''} · kein API-Pricing` : '';
+      return;
+    }
+
+    // OpenAI
     const model = document.getElementById('modelSelect').value;
     const info  = MODEL_INFO[model];
-
     document.getElementById('costModel').textContent = model;
     document.getElementById('costChars').textContent = len.toLocaleString('de-DE');
+    document.getElementById('costEst').className     = 'cost-value accent';
 
     if (!info || len === 0) {
-      document.getElementById('costEst').textContent   = '$0.0000';
-      document.getElementById('costEst').className     = 'cost-value accent';
+      document.getElementById('costEst').textContent = '$0.0000';
       document.getElementById('costChunkDetail').textContent = '';
       return;
     }
@@ -619,18 +806,13 @@
     const cost    = (len / 1_000_000) * info.pricePerMChar;
     const costStr = cost < 0.0001 ? `$${cost.toFixed(6)}` :
                     cost < 0.001  ? `$${cost.toFixed(5)}` : `$${cost.toFixed(4)}`;
-
-    const costEl  = document.getElementById('costEst');
-    costEl.textContent = costStr;
-    costEl.className   = 'cost-value ' + (cost > 0.05 ? 'warn' : 'accent');
+    document.getElementById('costEst').textContent = costStr;
+    document.getElementById('costEst').className   = 'cost-value ' + (cost > 0.05 ? 'warn' : 'accent');
 
     const chunks = Math.ceil(len / CHUNK_SIZE);
-    const detail = document.getElementById('costChunkDetail');
-    if (chunks > 1) {
-      detail.textContent = `${chunks} Chunks × ~$${(cost / chunks).toFixed(5)} = ${costStr} gesamt`;
-    } else {
-      detail.textContent = chunks === 1 ? '1 API-Request · kein Chunking nötig' : '';
-    }
+    document.getElementById('costChunkDetail').textContent =
+      chunks > 1 ? `${chunks} Chunks × ~$${(cost / chunks).toFixed(5)} = ${costStr} gesamt` :
+      chunks === 1 ? '1 API-Request · kein Chunking nötig' : '';
   }
 
   // ── MARKDOWN STRIP ──
@@ -668,11 +850,7 @@
       s.length > 300 ? s.slice(0, 300) + '…' : s;
   }
 
-  // ── CHUNKING-ENGINE ──
-  /**
-   * Teilt Text intelligent an natürlichen Grenzen auf.
-   * Priorität: Absatz (\n\n) > Zeile (\n) > Satzende > Wortgrenze > hartes Schneiden
-   */
+  // ── CHUNKING ENGINE ──
   function splitTextToChunks(text, maxChars) {
     if (text.length <= maxChars) return [text];
     const chunks = [];
@@ -681,19 +859,14 @@
       if (rest.length <= maxChars) { chunks.push(rest); break; }
       const win = rest.slice(0, maxChars);
       let cut = -1;
-      // 1. Absatzgrenze
       const p = win.lastIndexOf('\n\n');
       if (p > maxChars * 0.4) cut = p + 2;
-      // 2. Zeilenumbruch
       if (cut === -1) { const l = win.lastIndexOf('\n'); if (l > maxChars * 0.4) cut = l + 1; }
-      // 3. Satzende
       if (cut === -1) {
-        const s = Math.max(win.lastIndexOf('. '), win.lastIndexOf('! '), win.lastIndexOf('? '), win.lastIndexOf('.\n'));
+        const s = Math.max(win.lastIndexOf('. '), win.lastIndexOf('! '), win.lastIndexOf('? '));
         if (s > maxChars * 0.3) cut = s + 2;
       }
-      // 4. Leerzeichen
       if (cut === -1) { const sp = win.lastIndexOf(' '); if (sp > 0) cut = sp + 1; }
-      // 5. Hartes Schneiden (Notfall)
       if (cut === -1) cut = maxChars;
       chunks.push(rest.slice(0, cut).trimEnd());
       rest = rest.slice(cut).trimStart();
@@ -701,7 +874,7 @@
     return chunks.filter(c => c.length > 0);
   }
 
-  // ── STATUS BAR ──
+  // ── STATUS ──
   function setStatus(type, msg) {
     const bar  = document.getElementById('statusBar');
     const text = document.getElementById('statusText');
@@ -722,9 +895,7 @@
     el.innerHTML = '';
     for (let i = 0; i < total; i++) {
       const pip = document.createElement('div');
-      pip.className = 'chunk-pip';
-      pip.id        = `pip-${i}`;
-      pip.title     = `Chunk ${i + 1}`;
+      pip.className = 'chunk-pip'; pip.id = `pip-${i}`; pip.title = `Chunk ${i + 1}`;
       el.appendChild(pip);
     }
   }
@@ -752,17 +923,17 @@
     document.getElementById('progressWrap').classList.remove('visible');
   }
 
-  // ── EINZELNER API-CALL ──
-  async function callTTSApi(apiKey, text, model, voice, speed, format, instructions) {
+  // ── API CALLS ──
+
+  /** OpenAI TTS API */
+  async function callOpenAI(apiKey, text, model, voice, speed, format, instructions) {
     const payload = { model, input: text, voice, speed, response_format: format };
     if (model === 'gpt-4o-mini-tts' && instructions) payload.instructions = instructions;
-
     const res = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify(payload),
     });
-
     if (!res.ok) {
       let msg = `API-Fehler ${res.status}`;
       try { const d = await res.json(); if (d?.error?.message) msg += ': ' + d.error.message; } catch (_) {}
@@ -774,40 +945,70 @@
     return res.blob();
   }
 
-  // ── HAUPT-EINSTIEGSPUNKT ──
+  /** Lokaler Plugin-Server: POST /tts mit JSON-Body */
+  async function callPlugin(text, voiceId, format, speed) {
+    const endpoint = activePlugin.endpoint;
+    const path     = activePlugin.api_path || '/tts';
+    const res = await fetch(endpoint + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice: voiceId, format, speed }),
+    });
+    if (!res.ok) {
+      let msg = `Server-Fehler ${res.status}`;
+      try { const d = await res.json(); if (d?.error) msg += ': ' + d.error; } catch (_) {}
+      throw new Error(msg);
+    }
+    return res.blob();
+  }
+
+  // ── MAIN CONVERT ──
   async function startConvert() {
-    const apiKey       = document.getElementById('apiKey').value.trim();
+    const provider     = currentProvider();
     const rawText      = document.getElementById('textInput').value.trim();
-    const model        = document.getElementById('modelSelect').value;
-    const voice        = document.getElementById('voiceSelect').value;
     const speed        = parseFloat(document.getElementById('speedRange').value);
     const format       = document.getElementById('formatSelect').value;
     const doStrip      = document.getElementById('stripMd').checked;
-    const instructions = document.getElementById('instructionsInput').value.trim();
 
-    // Validierung
-    if (!apiKey)                    { setStatus('error', 'Kein API-Key eingegeben.'); return; }
-    if (!apiKey.startsWith('sk-')) { setStatus('error', 'API-Key muss mit "sk-" beginnen.'); return; }
-    if (!rawText)                   { setStatus('error', 'Kein Text eingegeben.'); return; }
+    // Provider-spezifische Validierung
+    if (provider === 'openai') {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey)                    { setStatus('error', 'Kein API-Key eingegeben.'); return; }
+      if (!apiKey.startsWith('sk-')) { setStatus('error', 'API-Key muss mit "sk-" beginnen.'); return; }
+    } else {
+      if (!activePlugin) { setStatus('error', 'Kein Plugin geladen. Plugin-JSON-Datei auswählen.'); return; }
+    }
+    if (!rawText) { setStatus('error', 'Kein Text eingegeben.'); return; }
 
     const text = doStrip ? stripMarkdown(rawText) : rawText;
     if (!text) { setStatus('error', 'Nach Markdown-Entfernung ist kein Text übrig.'); return; }
 
-    const chunks = splitTextToChunks(text, CHUNK_SIZE);
+    const chunkSz = (provider === 'plugin' && activePlugin?.chunk_size)
+                    ? activePlugin.chunk_size : CHUNK_SIZE;
+    const chunks  = splitTextToChunks(text, chunkSz);
 
-    // UI vorbereiten
     document.getElementById('convertBtn').disabled     = true;
     document.getElementById('cancelBtn').style.display = 'block';
     document.getElementById('audioPanel').classList.remove('visible');
     cancelRequested = false;
 
-    // ── SINGLE CHUNK (kein Progress) ──
+    // Provider-Parameter sammeln
+    const apiKey       = document.getElementById('apiKey').value.trim();
+    const model        = document.getElementById('modelSelect').value;
+    const voice        = provider === 'plugin'
+                         ? document.getElementById('pluginVoiceSelect').value
+                         : document.getElementById('voiceSelect').value;
+    const instructions = document.getElementById('instructionsInput').value.trim();
+
+    // ── SINGLE CHUNK ──
     if (chunks.length === 1) {
       hideProgressUI();
-      setStatus('loading', `Konvertiere · ${model} · ${voice} · ${speed}×…`);
+      setStatus('loading', `Konvertiere · ${voice} · ${speed}×…`);
       try {
-        const blob = await callTTSApi(apiKey, chunks[0], model, voice, speed, format, instructions);
-        finalizeAudio([blob], format, model, voice, speed, text.length);
+        const blob = provider === 'plugin'
+          ? await callPlugin(chunks[0], voice, format, speed)
+          : await callOpenAI(apiKey, chunks[0], model, voice, speed, format, instructions);
+        finalizeAudio([blob], format, model, voice, speed, text.length, provider);
       } catch (err) {
         setStatus('error', err.message);
       } finally {
@@ -817,94 +1018,81 @@
     }
 
     // ── MULTI-CHUNK ──
-    const total = chunks.length;
-    initProgressUI(total);
-    setStatus('loading', `Chunked-Konvertierung: ${total} Chunks werden sequenziell verarbeitet…`);
+    initProgressUI(chunks.length);
+    setStatus('loading', `${chunks.length} Chunks werden verarbeitet…`);
 
     const blobs  = [];
     let   errors = 0;
 
-    for (let i = 0; i < total; i++) {
-
-      // Cancel-Check
+    for (let i = 0; i < chunks.length; i++) {
       if (cancelRequested) {
-        setStatus('info', `Abgebrochen nach ${i} / ${total} Chunks.`);
-        hideProgressUI();
-        resetConvertUI();
-        return;
+        setStatus('info', `Abgebrochen nach ${i} / ${chunks.length} Chunks.`);
+        hideProgressUI(); resetConvertUI(); return;
       }
-
-      updateProgressUI(i, i, total, errors);
-      setStatus('loading', `Chunk ${i + 1} / ${total} · ${chunks[i].length} Zeichen…`);
+      updateProgressUI(i, i, chunks.length, errors);
+      setStatus('loading', `Chunk ${i + 1} / ${chunks.length} · ${chunks[i].length} Zeichen…`);
 
       try {
-        const blob = await callTTSApi(apiKey, chunks[i], model, voice, speed, format, instructions);
+        const blob = provider === 'plugin'
+          ? await callPlugin(chunks[i], voice, format, speed)
+          : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
         blobs.push(blob);
-        updateProgressUI(i + 1, i + 1, total, errors);
-
+        updateProgressUI(i + 1, i + 1, chunks.length, errors);
       } catch (err) {
-
-        // Rate-Limit → einmal automatisch warten und retry
         if (err.message.includes('Rate-Limit')) {
           errors++;
           markPipError(i);
-          setStatus('loading', `Rate-Limit — warte 12 Sekunden, dann erneuter Versuch… (Chunk ${i + 1})`);
+          setStatus('loading', `Rate-Limit — warte 12s… (Chunk ${i + 1})`);
           await sleep(12000);
           if (cancelRequested) break;
           try {
-            const blob = await callTTSApi(apiKey, chunks[i], model, voice, speed, format, instructions);
-            blobs.push(blob);
-            errors--;
+            const blob = provider === 'plugin'
+              ? await callPlugin(chunks[i], voice, format, speed)
+              : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
+            blobs.push(blob); errors--;
             if (document.getElementById(`pip-${i}`)) document.getElementById(`pip-${i}`).className = 'chunk-pip done';
-            updateProgressUI(i + 1, i + 1, total, errors);
+            updateProgressUI(i + 1, i + 1, chunks.length, errors);
           } catch (retryErr) {
             setStatus('error', `Chunk ${i + 1} auch nach Retry fehlgeschlagen: ${retryErr.message}`);
-            resetConvertUI();
-            return;
+            resetConvertUI(); return;
           }
-
         } else {
-          // Anderer Fehler → sofort abbrechen
           setStatus('error', `Fehler bei Chunk ${i + 1}: ${err.message}`);
-          markPipError(i);
-          resetConvertUI();
-          return;
+          markPipError(i); resetConvertUI(); return;
         }
       }
-
-      // Kurze Pause zwischen Chunks — Rate-Limit-Prävention
-      if (i < total - 1) await sleep(250);
+      if (i < chunks.length - 1) await sleep(provider === 'plugin' ? 100 : 250);
     }
 
-    finalizeAudio(blobs, format, model, voice, speed, text.length);
+    finalizeAudio(blobs, format, model, voice, speed, text.length, provider);
     resetConvertUI();
   }
 
-  // ── AUDIO ZUSAMMENFÜHREN + PLAYER BEFÜLLEN ──
-  function finalizeAudio(blobs, format, model, voice, speed, charCount) {
-    const mime = { mp3: 'audio/mpeg', opus: 'audio/ogg', aac: 'audio/aac', flac: 'audio/flac' }[format] || 'audio/mpeg';
-
-    // Browser-native Blob-Concatenation — alle Chunks aneinanderreihen
+  function finalizeAudio(blobs, format, model, voice, speed, charCount, provider) {
+    const mime = { mp3: 'audio/mpeg', opus: 'audio/ogg', aac: 'audio/aac', flac: 'audio/flac', wav: 'audio/wav' }[format] || 'audio/mpeg';
     const combined = new Blob(blobs, { type: mime });
     currentAudioBlob = combined;
     currentFilename  = `tts_${Date.now()}.${format}`;
 
     document.getElementById('audioPlayer').src = URL.createObjectURL(combined);
 
-    const sizeKB = (combined.size / 1024).toFixed(1);
+    const sizeKB  = (combined.size / 1024).toFixed(1);
     const nChunks = blobs.length;
     document.getElementById('audioInfo').textContent =
       `${format.toUpperCase()} · ${sizeKB} KB · ${voice} · ${speed}×` +
-      (nChunks > 1 ? ` · ${nChunks} Chunks zusammengeführt` : '');
-
+      (nChunks > 1 ? ` · ${nChunks} Chunks` : '');
     document.getElementById('audioPanel').classList.add('visible');
 
-    const info  = MODEL_INFO[model];
-    const cost  = info ? ` · ~$${((charCount / 1_000_000) * info.pricePerMChar).toFixed(4)}` : '';
-    setStatus('success', `Audio fertig. ${sizeKB} KB · ${charCount.toLocaleString('de-DE')} Zeichen${cost}`);
+    let costNote = '';
+    if (provider === 'openai') {
+      const info = MODEL_INFO[model];
+      if (info) costNote = ` · ~$${((charCount / 1_000_000) * info.pricePerMChar).toFixed(4)}`;
+    } else {
+      costNote = ' · kostenlos (lokaler Server)';
+    }
+    setStatus('success', `Audio fertig. ${sizeKB} KB · ${charCount.toLocaleString('de-DE')} Zeichen${costNote}`);
   }
 
-  // ── RESET CONVERT UI ──
   function resetConvertUI() {
     document.getElementById('convertBtn').disabled     = false;
     document.getElementById('cancelBtn').style.display = 'none';
@@ -912,23 +1100,18 @@
     cancelRequested = false;
   }
 
-  // ── CANCEL ──
   function cancelConvert() {
     cancelRequested = true;
     document.getElementById('cancelBtn').disabled = true;
   }
 
-  // ── DOWNLOAD ──
   function downloadAudio() {
     if (!currentAudioBlob) return;
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(currentAudioBlob);
-    a.download = currentFilename;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    a.href = URL.createObjectURL(currentAudioBlob); a.download = currentFilename;
+    a.click(); URL.revokeObjectURL(a.href);
   }
 
-  // ── CLEAR ALL ──
   function clearAll() {
     document.getElementById('textInput').value = '';
     document.getElementById('audioPanel').classList.remove('visible');
@@ -939,7 +1122,6 @@
     setStatus('info', 'Bereit.');
   }
 
-  // ── MODEL CHANGE ──
   function onModelChange() {
     const model = document.getElementById('modelSelect').value;
     document.getElementById('modelLockNotice').classList.toggle('visible', model !== 'gpt-4o-mini-tts');
@@ -1027,14 +1209,15 @@ Overall Impression: A trained stage actor or spoken-word artist—fully inhabite
   function onInstructionsEdit() {
     const cur = document.getElementById('instructionsInput').value;
     const hit = Object.keys(PRESETS).find(k => PRESETS[k].text === cur);
-    document.getElementById('presetSelect').value  = hit || 'custom';
+    document.getElementById('presetSelect').value    = hit || 'custom';
     document.getElementById('presetTag').textContent = hit ? PRESETS[hit].tag : 'Eigene Konfiguration';
     saveSettings();
   }
 
-  // ── SETTINGS PERSISTENCE (kein API Key) ──
+  // ── SETTINGS PERSISTENCE ──
   function saveSettings() {
     localStorage.setItem('tts_settings', JSON.stringify({
+      provider:     document.getElementById('providerSelect').value,
       model:        document.getElementById('modelSelect').value,
       voice:        document.getElementById('voiceSelect').value,
       speed:        document.getElementById('speedRange').value,
@@ -1050,10 +1233,11 @@ Overall Impression: A trained stage actor or spoken-word artist—fully inhabite
     try {
       const s = JSON.parse(localStorage.getItem('tts_settings') || 'null');
       if (!s) return;
-      if (s.model)  document.getElementById('modelSelect').value  = s.model;
-      if (s.voice)  document.getElementById('voiceSelect').value  = s.voice;
-      if (s.speed)  document.getElementById('speedRange').value   = s.speed;
-      if (s.format) document.getElementById('formatSelect').value = s.format;
+      if (s.provider) document.getElementById('providerSelect').value = s.provider;
+      if (s.model)    document.getElementById('modelSelect').value    = s.model;
+      if (s.voice)    document.getElementById('voiceSelect').value    = s.voice;
+      if (s.speed)    document.getElementById('speedRange').value     = s.speed;
+      if (s.format)   document.getElementById('formatSelect').value   = s.format;
       if (s.stripMd !== undefined) {
         document.getElementById('stripMd').checked = s.stripMd;
         if (s.stripMd) document.getElementById('mdPreview').classList.add('visible');
@@ -1075,17 +1259,21 @@ Overall Impression: A trained stage actor or spoken-word artist—fully inhabite
   }
 
   function updateFooter() {
-    const model  = document.getElementById('modelSelect').value;
-    const voice  = document.getElementById('voiceSelect').value;
-    const speed  = parseFloat(document.getElementById('speedRange').value).toFixed(2);
-    const format = document.getElementById('formatSelect').value;
-    const info   = MODEL_INFO[model];
-    const price  = info ? ` · $${info.pricePerMChar.toFixed(2)}/1M` : '';
-    document.getElementById('footerSettings').textContent =
-      `${model}${price} · ${voice} · ${speed}× · ${format}`;
+    const provider = currentProvider();
+    const speed    = parseFloat(document.getElementById('speedRange').value).toFixed(2);
+    const format   = document.getElementById('formatSelect').value;
+    if (provider === 'plugin') {
+      const name = activePlugin ? activePlugin.name : 'Lokaler Server';
+      document.getElementById('footerSettings').textContent = `${name} · ${speed}× · ${format} · kostenlos`;
+    } else {
+      const model  = document.getElementById('modelSelect').value;
+      const voice  = document.getElementById('voiceSelect').value;
+      const info   = MODEL_INFO[model];
+      const price  = info ? ` · $${info.pricePerMChar.toFixed(2)}/1M` : '';
+      document.getElementById('footerSettings').textContent = `${model}${price} · ${voice} · ${speed}× · ${format}`;
+    }
   }
 
-  // ── HILFSFUNKTIONEN ──
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
 </body>
