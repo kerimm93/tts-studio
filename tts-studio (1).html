@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTS Studio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+    :root {
+      --bg-0:        #0d0d0f;
+      --bg-1:        #131316;
+      --bg-2:        #1a1a1f;
+      --bg-3:        #222228;
+      --border:      #2e2e38;
+      --border-lit:  #4a4a5a;
+      --text-0:      #e8e8f0;
+      --text-1:      #9494a8;
+      --text-2:      #5a5a6e;
+      --accent:      #f5a623;
+      --accent-dim:  #a06a10;
+      --accent-glow: rgba(245,166,35,0.15);
+      --danger:      #e05555;
+      --success:     #4ec87a;
+      --font:        'JetBrains Mono', 'Cascadia Code', 'Fira Mono', monospace;
+      --radius:      4px;
+      --transition:  120ms ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      opacity: 0.6;
+    }
+
+    #app {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      gap: 20px;
+    }
+
+    header {
+      display: flex; align-items: baseline; gap: 16px;
+      border-bottom: 1px solid var(--border); padding-bottom: 16px;
+    }
+    header h1 {
+      font-size: 18px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    header span { font-size: 11px; color: var(--text-2); letter-spacing: 0.05em; }
+
+    main {
+      display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+    }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius); }
+    .panel-head {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+      border-bottom: 1px solid var(--border); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2);
+    }
+    .panel-head .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-lit); }
+    .panel-body { padding: 14px; }
+
+    label {
+      display: block; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); margin-bottom: 5px;
+    }
+
+    textarea, input[type="text"], input[type="password"], select {
+      width: 100%; background: var(--bg-0); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text-0); font-family: var(--font);
+      font-size: 13px; padding: 8px 10px; outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      -webkit-appearance: none;
+    }
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--accent-dim); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    textarea { resize: vertical; min-height: 320px; line-height: 1.7; }
+    select { cursor: pointer; }
+
+    .input-wrap { position: relative; }
+    .input-wrap input { padding-right: 36px; }
+    .input-wrap button.toggle-pw {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-2);
+      padding: 2px; font-size: 12px; transition: color var(--transition);
+    }
+    .input-wrap button.toggle-pw:hover { color: var(--text-1); }
+
+    .range-row { display: flex; align-items: center; gap: 10px; }
+    input[type="range"] {
+      flex: 1; -webkit-appearance: none; height: 3px;
+      background: var(--bg-3); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent); border: 2px solid var(--bg-0);
+      box-shadow: 0 0 6px var(--accent-glow); transition: transform var(--transition);
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .range-val { min-width: 38px; text-align: right; color: var(--accent); font-weight: 500; font-size: 12px; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+    .toggle-label { font-size: 11px; color: var(--text-1); }
+    .toggle { position: relative; width: 36px; height: 20px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: 20px; cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .toggle-track::after {
+      content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--text-2);
+      transition: transform var(--transition), background var(--transition);
+    }
+    .toggle input:checked + .toggle-track { background: var(--accent-dim); border-color: var(--accent-dim); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(16px); background: var(--accent); }
+
+    .gap { margin-top: 14px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: var(--font); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; border: none;
+      border-radius: var(--radius); padding: 9px 16px; cursor: pointer;
+      transition: all var(--transition); white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover:not(:disabled) { background: #ffb840; box-shadow: 0 0 12px var(--accent-glow); }
+    .btn-secondary { background: var(--bg-3); color: var(--text-1); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--border-lit); color: var(--text-0); }
+    .btn-danger { background: rgba(224,85,85,0.12); color: var(--danger); border: 1px solid rgba(224,85,85,0.25); }
+    .btn-danger:hover:not(:disabled) { background: rgba(224,85,85,0.22); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-full { width: 100%; }
+
+    /* ── TEXT META + COST ── */
+    .text-meta {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-top: 8px;
+    }
+    .text-meta-left { flex-shrink: 0; }
+    .char-count { font-size: 10px; color: var(--text-2); }
+    .char-count.warn { color: var(--accent); }
+    .chunk-hint { font-size: 9px; color: var(--text-2); margin-top: 2px; }
+
+    .cost-box {
+      flex: 1; min-width: 0;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
+    }
+    .cost-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .cost-row + .cost-row { margin-top: 2px; }
+    .cost-label { color: var(--text-2); }
+    .cost-value { color: var(--text-0); font-weight: 500; }
+    .cost-value.accent { color: var(--accent); }
+    .cost-value.warn   { color: #f5a623bb; }
+    .cost-chunks {
+      margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border);
+      color: var(--text-2); font-size: 9px; line-height: 1.5;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-wrap { display: none; margin-top: 14px; }
+    .progress-wrap.visible { display: block; }
+    .progress-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px; font-size: 10px; color: var(--text-1);
+    }
+    .progress-bar-track {
+      width: 100%; height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width 350ms ease; width: 0%;
+    }
+    .progress-chunks { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
+    .chunk-pip {
+      width: 10px; height: 10px; border-radius: 2px;
+      background: var(--bg-3); border: 1px solid var(--border);
+      transition: all 200ms ease;
+    }
+    .chunk-pip.active  { background: var(--accent-dim); border-color: var(--accent); animation: pulse 0.8s ease-in-out infinite; }
+    .chunk-pip.done    { background: var(--success); border-color: var(--success); }
+    .chunk-pip.error   { background: var(--danger);  border-color: var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── STATUS ── */
+    .status-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: var(--radius); font-size: 12px;
+    }
+    .status-bar.info    { background: var(--bg-2); border: 1px solid var(--border); color: var(--text-1); }
+    .status-bar.loading { background: rgba(245,166,35,0.07); border: 1px solid var(--accent-dim); color: var(--accent); }
+    .status-bar.success { background: rgba(78,200,122,0.07); border: 1px solid #2e7a4a; color: var(--success); }
+    .status-bar.error   { background: rgba(224,85,85,0.08); border: 1px solid #7a2e2e; color: var(--danger); }
+    .spinner {
+      width: 14px; height: 14px; border: 2px solid var(--accent-dim);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── AUDIO PANEL ── */
+    .audio-panel {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; display: none; margin-top: 12px;
+    }
+    .audio-panel.visible { display: block; }
+    audio { width: 100%; margin-top: 8px; }
+    .audio-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .audio-meta span { font-size: 10px; color: var(--text-2); }
+
+    /* ── MODEL INFO ── */
+    .model-info-box {
+      margin-top: 8px; background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
+      color: var(--text-2); line-height: 1.65;
+    }
+    .model-info-box strong { color: var(--text-1); }
+
+    /* ── INSTRUCTIONS ── */
+    .preset-tag {
+      display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 2px 6px; border-radius: 2px;
+      background: var(--bg-3); color: var(--text-2); border: 1px solid var(--border); margin-top: 6px;
+    }
+    textarea.instructions-area { min-height: 140px; font-size: 12px; line-height: 1.65; resize: vertical; }
+    .model-lock-notice {
+      font-size: 10px; color: var(--accent-dim);
+      background: rgba(245,166,35,0.06); border: 1px solid rgba(245,166,35,0.2);
+      border-radius: var(--radius); padding: 6px 10px; margin-top: 8px; display: none;
+    }
+    .model-lock-notice.visible { display: block; }
+
+    /* ── MD PREVIEW ── */
+    .md-preview {
+      font-size: 11px; color: var(--text-2); padding: 6px 10px;
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-top: 8px; display: none;
+    }
+    .md-preview.visible { display: block; }
+
+    footer {
+      border-top: 1px solid var(--border); padding-top: 12px;
+      font-size: 10px; color: var(--text-2);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-0); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-lit); }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>TTS Studio</h1>
+    <span>OpenAI Text-to-Speech · Chunking-Engine · Kostenrechner</span>
+  </header>
+
+  <main>
+
+    <!-- LEFT: Text + Progress + Status -->
+    <div>
+      <div class="panel">
+        <div class="panel-head"><div class="dot"></div>Text-Eingabe</div>
+        <div class="panel-body">
+          <textarea id="textInput"
+            placeholder="Text hier eingeben oder einfügen — auch sehr lange Texte (Bücher, Artikel, Dokumente)…"
+            spellcheck="true"
+            oninput="updateTextMeta()"></textarea>
+
+          <!-- Char count left, cost box right -->
+          <div class="text-meta">
+            <div class="text-meta-left">
+              <div class="char-count" id="charCount">0 Zeichen</div>
+              <div class="chunk-hint" id="chunkHint"></div>
+            </div>
+            <div class="cost-box">
+              <div class="cost-row">
+                <span class="cost-label">Modell</span>
+                <span class="cost-value" id="costModel">—</span>
+              </div>
+              <div class="cost-row">
+                <span class="cost-label">Zeichen</span>
+                <span class="cost-value" id="costChars">0</span>
+              </div>
+              <div class="cost-row">
+                <span class="cost-label">Geschätzte Kosten</span>
+                <span class="cost-value accent" id="costEst">$0.0000</span>
+              </div>
+              <div class="cost-chunks" id="costChunkDetail"></div>
+            </div>
+          </div>
+
+          <div class="md-preview" id="mdPreview">
+            <strong>Vorschau (Markdown entfernt):</strong>
+            <div id="mdPreviewText" style="margin-top:4px; white-space: pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar (wird bei Chunked-Jobs sichtbar) -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-header">
+          <span id="progressLabel">Initialisiere…</span>
+          <span id="progressPct" style="color:var(--accent);">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <!-- Chunk-Pips: ein kleines Quadrat pro Chunk -->
+        <div class="progress-chunks" id="progressChunks"></div>
+      </div>
+
+      <!-- Status + Audio Output -->
+      <div style="margin-top:12px;">
+        <div class="status-bar info" id="statusBar">
+          <span>⬡</span>
+          <span id="statusText">Bereit. API-Key eingeben, Text einfügen, konvertieren.</span>
+        </div>
+        <div class="audio-panel" id="audioPanel">
+          <div class="panel-head" style="padding:0 0 10px; border:none;">
+            <div class="dot" style="background:var(--success)"></div>
+            Audio-Ausgabe
+          </div>
+          <audio id="audioPlayer" controls></audio>
+          <div class="audio-meta">
+            <span id="audioInfo">–</span>
+            <button class="btn btn-secondary" onclick="downloadAudio()">↓ Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Settings Sidebar -->
+    <aside>
+
+      <!-- API Key -->
+      <div class="panel">
+        <div class="panel-head"><div class="dot"></div>API-Konfiguration</div>
+        <div class="panel-body">
+          <label>OpenAI API Key</label>
+          <div class="input-wrap">
+            <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+            <button class="toggle-pw" onclick="togglePw()">👁</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-2);margin-top:5px;">Nicht gespeichert. Nur im Arbeitsspeicher.</div>
+        </div>
+      </div>
+
+      <!-- Model & Voice -->
+      <div class="panel gap">
+        <div class="panel-head"><div class="dot"></div>Modell &amp; Stimme</div>
+        <div class="panel-body">
+          <label>Modell</label>
+          <select id="modelSelect" onchange="onModelChange()">
+            <option value="tts-1">tts-1 — Standard</option>
+            <option value="tts-1-hd">tts-1-hd — HD-Qualität</option>
+            <option value="gpt-4o-mini-tts">gpt-4o-mini-tts — Mini + Instructions</option>
+          </select>
+          <!-- Model description + pricing -->
+          <div class="model-info-box" id="modelInfoBox">–</div>
+
+          <label style="margin-top:12px;">Stimme</label>
+          <select id="voiceSelect" onchange="saveSettings()">
+            <option value="alloy">alloy</option>
+            <option value="echo">echo</option>
+            <option value="fable">fable</option>
+            <option value="onyx" selected>onyx</option>
+            <option value="nova">nova</option>
+            <option value="shimmer">shimmer</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Speed & Format -->
+      <div class="panel gap">
+        <div class="panel-head"><div class="dot"></div>Einstellungen</div>
+        <div class="panel-body">
+          <label>Sprechtempo</label>
+          <div class="range-row">
+            <input type="range" id="speedRange" min="0.25" max="4.0" step="0.05" value="1.0"
+              oninput="updateSpeedDisplay(); saveSettings()" />
+            <span class="range-val" id="speedVal">1.00×</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-2);margin-top:3px;">
+            <span>0.25×</span><span>4.0×</span>
+          </div>
+
+          <label style="margin-top:14px;">Audio-Format</label>
+          <select id="formatSelect" onchange="onFormatChange()">
+            <option value="mp3" selected>mp3 — empfohlen für lange Texte</option>
+            <option value="opus">opus</option>
+            <option value="aac">aac</option>
+            <option value="flac">flac</option>
+          </select>
+          <div style="font-size:10px;color:var(--text-2);margin-top:4px;" id="formatNote"></div>
+
+          <div class="toggle-row" style="margin-top:16px;">
+            <span class="toggle-label">Markdown entfernen</span>
+            <label class="toggle">
+              <input type="checkbox" id="stripMd" onchange="onStripMdToggle(); saveSettings()">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Instructions -->
+      <div class="panel gap">
+        <div class="panel-head">
+          <div class="dot"></div>Voice Instructions
+          <span style="margin-left:auto;font-size:9px;color:var(--accent-dim);text-transform:none;letter-spacing:0;">gpt-4o-mini-tts</span>
+        </div>
+        <div class="panel-body">
+          <label>Voreinstellung</label>
+          <select id="presetSelect" onchange="applyPreset()">
+            <option value="custom">— Eigene / Leer —</option>
+            <option value="scholar">📚 Scholar — Akademische Texte, Essays, Sachbücher</option>
+            <option value="narrator">🎙 Narrator — Romane, Kurzgeschichten, Belletristik</option>
+            <option value="news">📰 Newsreader — Artikel, Berichte, Nachrichten</option>
+            <option value="meditation">🧘 Meditation — Geführte Übungen, Achtsamkeitstexte</option>
+            <option value="technical">⚙️ Technical — Dokumentationen, Tutorials, Anleitungen</option>
+            <option value="conversational">💬 Conversational — Dialoge, Podcasts, informelle Texte</option>
+            <option value="dramatic">🎭 Dramatic — Lyrik, Theaterstücke, expressive Prosa</option>
+          </select>
+          <div class="preset-tag" id="presetTag">Eigene Konfiguration</div>
+
+          <label style="margin-top:12px;">Instruktionen</label>
+          <textarea class="instructions-area" id="instructionsInput"
+            placeholder="Beschreibe Tonfall, Tempo, Stil…"
+            oninput="onInstructionsEdit()"></textarea>
+          <div style="font-size:10px;color:var(--text-2);margin-top:5px;">
+            Nur für <code style="color:var(--accent-dim)">gpt-4o-mini-tts</code> aktiv.
+          </div>
+        </div>
+      </div>
+      <div class="model-lock-notice" id="modelLockNotice">
+        ⚠ Instructions nur von <strong>gpt-4o-mini-tts</strong> unterstützt.
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="gap">
+        <button class="btn btn-primary btn-full" id="convertBtn" onclick="startConvert()">▶ Konvertieren</button>
+        <button class="btn btn-danger btn-full" id="cancelBtn" style="margin-top:6px;display:none;" onclick="cancelConvert()">✕ Abbrechen</button>
+        <button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="clearAll()">✕ Alles leeren</button>
+      </div>
+
+    </aside>
+  </main>
+
+  <footer>
+    <span>TTS Studio — keine Daten außer an die OpenAI API</span>
+    <span id="footerSettings">–</span>
+  </footer>
+
+</div>
+
+<script>
+  /* =====================================================
+     TTS STUDIO — Vollständige JavaScript-Logik
+     - Chunking-Engine (splitTextToChunks)
+     - Sequentielle Multi-Chunk-Verarbeitung
+     - Cancel-Flag, Rate-Limit-Retry
+     - Kostenberechnung (MODEL_INFO Pricing)
+     - Voice Instructions + Presets
+     - LocalStorage Settings (kein API Key)
+  ===================================================== */
+
+  // ── GLOBALE STATE-VARIABLEN ──
+  let currentAudioBlob = null;   // aktuell geladenes Audio (für Download)
+  let currentFilename  = '';
+  let cancelRequested  = false;  // wird true wenn User "Abbrechen" klickt
+
+  // ── CHUNK-GRÖSSE ──
+  // OpenAI-Limit: 4096 Zeichen. 4000 als Sicherheitspuffer.
+  const CHUNK_SIZE = 4000;
+
+  // ── MODELL-INFORMATIONEN & PREISE ──
+  // Preise in USD pro 1 Million Zeichen (Stand 2025, platform.openai.com/docs/pricing)
+  const MODEL_INFO = {
+    'tts-1': {
+      pricePerMChar: 15.00,
+      label:       'Standard',
+      quality:     '★★★☆☆',
+      description: 'Schnell und günstig. Leichte Qualitätskompression bei sehr langen Texten merkbar. Ideal für Notizen, Entwürfe, kurze bis mittellange Inhalte.',
+    },
+    'tts-1-hd': {
+      pricePerMChar: 30.00,
+      label:       'HD-Qualität',
+      quality:     '★★★★★',
+      description: 'Beste Audioqualität, natürlichste Aussprache. Doppelter Preis. Empfohlen für finale Produktionen, Hörbücher, öffentlich veröffentlichte Inhalte.',
+    },
+    'gpt-4o-mini-tts': {
+      pricePerMChar: 15.00,
+      label:       'Mini + Instructions',
+      quality:     '★★★☆☆',
+      description: 'Unterstützt Voice Instructions (Tonfall, Stil, Tempo). Audioqualität ähnlich tts-1. Beste Wahl wenn Sprechstil-Kontrolle gewünscht ist.',
+    },
+  };
+
+  // ── INITIALISIERUNG ──
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    updateTextMeta();
+    updateSpeedDisplay();
+    updateModelInfo();
+    updateFormatNote();
+    updateFooter();
+  });
+
+  // ── PASSWORT-TOGGLE ──
+  function togglePw() {
+    const el = document.getElementById('apiKey');
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+
+  // ── SPEED DISPLAY ──
+  function updateSpeedDisplay() {
+    document.getElementById('speedVal').textContent =
+      parseFloat(document.getElementById('speedRange').value).toFixed(2) + '×';
+  }
+
+  // ── FORMAT-HINWEIS ──
+  function updateFormatNote() {
+    const notes = {
+      mp3:  'Empfohlen für lange Texte — Chunks werden nahtlos zusammengeführt.',
+      opus: 'Kleinste Dateigröße. Chunk-Übergänge können hörbar sein.',
+      aac:  'Gute Qualität. Chunk-Übergänge meist nicht hörbar.',
+      flac: 'Verlustfrei, große Dateien. Chunk-Übergänge können hörbar sein.',
+    };
+    document.getElementById('formatNote').textContent =
+      notes[document.getElementById('formatSelect').value] || '';
+  }
+  function onFormatChange() { updateFormatNote(); saveSettings(); }
+
+  // ── MODELL-INFO-BOX (Beschreibung + Preis) ──
+  function updateModelInfo() {
+    const model = document.getElementById('modelSelect').value;
+    const info  = MODEL_INFO[model];
+    if (!info) return;
+    document.getElementById('modelInfoBox').innerHTML =
+      `<strong>${info.label}</strong> · ${info.quality}<br>` +
+      `<span style="color:var(--accent)">$${info.pricePerMChar.toFixed(2)} / 1 Mio. Zeichen</span><br>` +
+      `<span style="display:block;margin-top:3px;">${info.description}</span>`;
+    updateCostEstimate();
+  }
+
+  // ── TEXT-META: Zeichenzähler + Kosten live aktualisieren ──
+  function updateTextMeta() {
+    const raw  = document.getElementById('textInput').value;
+    const text = document.getElementById('stripMd').checked ? stripMarkdown(raw) : raw;
+    const len  = text.length;
+
+    // Zeichenzähler
+    const cc = document.getElementById('charCount');
+    cc.textContent = len.toLocaleString('de-DE') + ' Zeichen';
+    cc.className   = 'char-count' + (len > 50000 ? ' warn' : '');
+
+    // Chunk-Hinweis
+    const hint = document.getElementById('chunkHint');
+    if (len > CHUNK_SIZE) {
+      hint.textContent = `→ ${Math.ceil(len / CHUNK_SIZE)} Chunks à max. ${CHUNK_SIZE} Zeichen`;
+    } else {
+      hint.textContent = len > 0 ? '→ 1 API-Request' : '';
+    }
+
+    // MD-Vorschau aktualisieren
+    if (document.getElementById('stripMd').checked) updateMdPreview(raw);
+
+    updateCostEstimate();
+  }
+
+  // ── KOSTENBERECHNUNG ──
+  function updateCostEstimate() {
+    const raw   = document.getElementById('textInput').value;
+    const text  = document.getElementById('stripMd').checked ? stripMarkdown(raw) : raw;
+    const len   = text.length;
+    const model = document.getElementById('modelSelect').value;
+    const info  = MODEL_INFO[model];
+
+    document.getElementById('costModel').textContent = model;
+    document.getElementById('costChars').textContent = len.toLocaleString('de-DE');
+
+    if (!info || len === 0) {
+      document.getElementById('costEst').textContent   = '$0.0000';
+      document.getElementById('costEst').className     = 'cost-value accent';
+      document.getElementById('costChunkDetail').textContent = '';
+      return;
+    }
+
+    const cost    = (len / 1_000_000) * info.pricePerMChar;
+    const costStr = cost < 0.0001 ? `$${cost.toFixed(6)}` :
+                    cost < 0.001  ? `$${cost.toFixed(5)}` : `$${cost.toFixed(4)}`;
+
+    const costEl  = document.getElementById('costEst');
+    costEl.textContent = costStr;
+    costEl.className   = 'cost-value ' + (cost > 0.05 ? 'warn' : 'accent');
+
+    const chunks = Math.ceil(len / CHUNK_SIZE);
+    const detail = document.getElementById('costChunkDetail');
+    if (chunks > 1) {
+      detail.textContent = `${chunks} Chunks × ~$${(cost / chunks).toFixed(5)} = ${costStr} gesamt`;
+    } else {
+      detail.textContent = chunks === 1 ? '1 API-Request · kein Chunking nötig' : '';
+    }
+  }
+
+  // ── MARKDOWN STRIP ──
+  function stripMarkdown(text) {
+    return text
+      .replace(/```[\s\S]*?```/g, m => m.replace(/```.*\n?/g, '').trim())
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/^(.+)\n[=\-]{2,}$/gm, '$1')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/\*{3}([^*]+)\*{3}/g, '$1')
+      .replace(/\*{2}([^*]+)\*{2}/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
+      .replace(/_([^_]+)_/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+      .replace(/^>\s+/gm, '')
+      .replace(/^[\-\*\+]\s+/gm, '')
+      .replace(/^\d+\.\s+/gm, '')
+      .replace(/^[-*_]{3,}$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function onStripMdToggle() {
+    const on = document.getElementById('stripMd').checked;
+    document.getElementById('mdPreview').classList.toggle('visible', on);
+    if (on) updateMdPreview(document.getElementById('textInput').value);
+    updateTextMeta();
+  }
+
+  function updateMdPreview(text) {
+    const s = stripMarkdown(text);
+    document.getElementById('mdPreviewText').textContent =
+      s.length > 300 ? s.slice(0, 300) + '…' : s;
+  }
+
+  // ── CHUNKING-ENGINE ──
+  /**
+   * Teilt Text intelligent an natürlichen Grenzen auf.
+   * Priorität: Absatz (\n\n) > Zeile (\n) > Satzende > Wortgrenze > hartes Schneiden
+   */
+  function splitTextToChunks(text, maxChars) {
+    if (text.length <= maxChars) return [text];
+    const chunks = [];
+    let rest = text;
+    while (rest.length > 0) {
+      if (rest.length <= maxChars) { chunks.push(rest); break; }
+      const win = rest.slice(0, maxChars);
+      let cut = -1;
+      // 1. Absatzgrenze
+      const p = win.lastIndexOf('\n\n');
+      if (p > maxChars * 0.4) cut = p + 2;
+      // 2. Zeilenumbruch
+      if (cut === -1) { const l = win.lastIndexOf('\n'); if (l > maxChars * 0.4) cut = l + 1; }
+      // 3. Satzende
+      if (cut === -1) {
+        const s = Math.max(win.lastIndexOf('. '), win.lastIndexOf('! '), win.lastIndexOf('? '), win.lastIndexOf('.\n'));
+        if (s > maxChars * 0.3) cut = s + 2;
+      }
+      // 4. Leerzeichen
+      if (cut === -1) { const sp = win.lastIndexOf(' '); if (sp > 0) cut = sp + 1; }
+      // 5. Hartes Schneiden (Notfall)
+      if (cut === -1) cut = maxChars;
+      chunks.push(rest.slice(0, cut).trimEnd());
+      rest = rest.slice(cut).trimStart();
+    }
+    return chunks.filter(c => c.length > 0);
+  }
+
+  // ── STATUS BAR ──
+  function setStatus(type, msg) {
+    const bar  = document.getElementById('statusBar');
+    const text = document.getElementById('statusText');
+    const icons = { info: '⬡', loading: '◈', success: '✓', error: '✗' };
+    bar.className    = 'status-bar ' + type;
+    text.textContent = msg;
+    const icon = bar.querySelector('span:first-child');
+    icon.innerHTML = type === 'loading' ? '<span class="spinner"></span>' : (icons[type] || '⬡');
+  }
+
+  // ── PROGRESS UI ──
+  function initProgressUI(total) {
+    document.getElementById('progressWrap').classList.add('visible');
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressPct').textContent  = '0%';
+    document.getElementById('progressLabel').textContent = `0 / ${total} Chunks`;
+    const el = document.getElementById('progressChunks');
+    el.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const pip = document.createElement('div');
+      pip.className = 'chunk-pip';
+      pip.id        = `pip-${i}`;
+      pip.title     = `Chunk ${i + 1}`;
+      el.appendChild(pip);
+    }
+  }
+
+  function updateProgressUI(done, activeIdx, total, errors) {
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('progressFill').style.width  = pct + '%';
+    document.getElementById('progressPct').textContent   = pct + '%';
+    document.getElementById('progressLabel').textContent =
+      `${done} / ${total} Chunks${errors > 0 ? ' · ' + errors + ' Fehler' : ''}`;
+    for (let i = 0; i < total; i++) {
+      const pip = document.getElementById(`pip-${i}`);
+      if (!pip) continue;
+      if      (i < done)        pip.className = 'chunk-pip done';
+      else if (i === activeIdx) pip.className = 'chunk-pip active';
+    }
+  }
+
+  function markPipError(i) {
+    const pip = document.getElementById(`pip-${i}`);
+    if (pip) pip.className = 'chunk-pip error';
+  }
+
+  function hideProgressUI() {
+    document.getElementById('progressWrap').classList.remove('visible');
+  }
+
+  // ── EINZELNER API-CALL ──
+  async function callTTSApi(apiKey, text, model, voice, speed, format, instructions) {
+    const payload = { model, input: text, voice, speed, response_format: format };
+    if (model === 'gpt-4o-mini-tts' && instructions) payload.instructions = instructions;
+
+    const res = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      let msg = `API-Fehler ${res.status}`;
+      try { const d = await res.json(); if (d?.error?.message) msg += ': ' + d.error.message; } catch (_) {}
+      if (res.status === 401) msg = 'Authentifizierungsfehler: API-Key ungültig oder abgelaufen.';
+      if (res.status === 429) msg = 'Rate-Limit erreicht.';
+      if (res.status === 500) msg = 'OpenAI-Serverfehler.';
+      throw new Error(msg);
+    }
+    return res.blob();
+  }
+
+  // ── HAUPT-EINSTIEGSPUNKT ──
+  async function startConvert() {
+    const apiKey       = document.getElementById('apiKey').value.trim();
+    const rawText      = document.getElementById('textInput').value.trim();
+    const model        = document.getElementById('modelSelect').value;
+    const voice        = document.getElementById('voiceSelect').value;
+    const speed        = parseFloat(document.getElementById('speedRange').value);
+    const format       = document.getElementById('formatSelect').value;
+    const doStrip      = document.getElementById('stripMd').checked;
+    const instructions = document.getElementById('instructionsInput').value.trim();
+
+    // Validierung
+    if (!apiKey)                    { setStatus('error', 'Kein API-Key eingegeben.'); return; }
+    if (!apiKey.startsWith('sk-')) { setStatus('error', 'API-Key muss mit "sk-" beginnen.'); return; }
+    if (!rawText)                   { setStatus('error', 'Kein Text eingegeben.'); return; }
+
+    const text = doStrip ? stripMarkdown(rawText) : rawText;
+    if (!text) { setStatus('error', 'Nach Markdown-Entfernung ist kein Text übrig.'); return; }
+
+    const chunks = splitTextToChunks(text, CHUNK_SIZE);
+
+    // UI vorbereiten
+    document.getElementById('convertBtn').disabled     = true;
+    document.getElementById('cancelBtn').style.display = 'block';
+    document.getElementById('audioPanel').classList.remove('visible');
+    cancelRequested = false;
+
+    // ── SINGLE CHUNK (kein Progress) ──
+    if (chunks.length === 1) {
+      hideProgressUI();
+      setStatus('loading', `Konvertiere · ${model} · ${voice} · ${speed}×…`);
+      try {
+        const blob = await callTTSApi(apiKey, chunks[0], model, voice, speed, format, instructions);
+        finalizeAudio([blob], format, model, voice, speed, text.length);
+      } catch (err) {
+        setStatus('error', err.message);
+      } finally {
+        resetConvertUI();
+      }
+      return;
+    }
+
+    // ── MULTI-CHUNK ──
+    const total = chunks.length;
+    initProgressUI(total);
+    setStatus('loading', `Chunked-Konvertierung: ${total} Chunks werden sequenziell verarbeitet…`);
+
+    const blobs  = [];
+    let   errors = 0;
+
+    for (let i = 0; i < total; i++) {
+
+      // Cancel-Check
+      if (cancelRequested) {
+        setStatus('info', `Abgebrochen nach ${i} / ${total} Chunks.`);
+        hideProgressUI();
+        resetConvertUI();
+        return;
+      }
+
+      updateProgressUI(i, i, total, errors);
+      setStatus('loading', `Chunk ${i + 1} / ${total} · ${chunks[i].length} Zeichen…`);
+
+      try {
+        const blob = await callTTSApi(apiKey, chunks[i], model, voice, speed, format, instructions);
+        blobs.push(blob);
+        updateProgressUI(i + 1, i + 1, total, errors);
+
+      } catch (err) {
+
+        // Rate-Limit → einmal automatisch warten und retry
+        if (err.message.includes('Rate-Limit')) {
+          errors++;
+          markPipError(i);
+          setStatus('loading', `Rate-Limit — warte 12 Sekunden, dann erneuter Versuch… (Chunk ${i + 1})`);
+          await sleep(12000);
+          if (cancelRequested) break;
+          try {
+            const blob = await callTTSApi(apiKey, chunks[i], model, voice, speed, format, instructions);
+            blobs.push(blob);
+            errors--;
+            if (document.getElementById(`pip-${i}`)) document.getElementById(`pip-${i}`).className = 'chunk-pip done';
+            updateProgressUI(i + 1, i + 1, total, errors);
+          } catch (retryErr) {
+            setStatus('error', `Chunk ${i + 1} auch nach Retry fehlgeschlagen: ${retryErr.message}`);
+            resetConvertUI();
+            return;
+          }
+
+        } else {
+          // Anderer Fehler → sofort abbrechen
+          setStatus('error', `Fehler bei Chunk ${i + 1}: ${err.message}`);
+          markPipError(i);
+          resetConvertUI();
+          return;
+        }
+      }
+
+      // Kurze Pause zwischen Chunks — Rate-Limit-Prävention
+      if (i < total - 1) await sleep(250);
+    }
+
+    finalizeAudio(blobs, format, model, voice, speed, text.length);
+    resetConvertUI();
+  }
+
+  // ── AUDIO ZUSAMMENFÜHREN + PLAYER BEFÜLLEN ──
+  function finalizeAudio(blobs, format, model, voice, speed, charCount) {
+    const mime = { mp3: 'audio/mpeg', opus: 'audio/ogg', aac: 'audio/aac', flac: 'audio/flac' }[format] || 'audio/mpeg';
+
+    // Browser-native Blob-Concatenation — alle Chunks aneinanderreihen
+    const combined = new Blob(blobs, { type: mime });
+    currentAudioBlob = combined;
+    currentFilename  = `tts_${Date.now()}.${format}`;
+
+    document.getElementById('audioPlayer').src = URL.createObjectURL(combined);
+
+    const sizeKB = (combined.size / 1024).toFixed(1);
+    const nChunks = blobs.length;
+    document.getElementById('audioInfo').textContent =
+      `${format.toUpperCase()} · ${sizeKB} KB · ${voice} · ${speed}×` +
+      (nChunks > 1 ? ` · ${nChunks} Chunks zusammengeführt` : '');
+
+    document.getElementById('audioPanel').classList.add('visible');
+
+    const info  = MODEL_INFO[model];
+    const cost  = info ? ` · ~$${((charCount / 1_000_000) * info.pricePerMChar).toFixed(4)}` : '';
+    setStatus('success', `Audio fertig. ${sizeKB} KB · ${charCount.toLocaleString('de-DE')} Zeichen${cost}`);
+  }
+
+  // ── RESET CONVERT UI ──
+  function resetConvertUI() {
+    document.getElementById('convertBtn').disabled     = false;
+    document.getElementById('cancelBtn').style.display = 'none';
+    document.getElementById('cancelBtn').disabled      = false;
+    cancelRequested = false;
+  }
+
+  // ── CANCEL ──
+  function cancelConvert() {
+    cancelRequested = true;
+    document.getElementById('cancelBtn').disabled = true;
+  }
+
+  // ── DOWNLOAD ──
+  function downloadAudio() {
+    if (!currentAudioBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(currentAudioBlob);
+    a.download = currentFilename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ── CLEAR ALL ──
+  function clearAll() {
+    document.getElementById('textInput').value = '';
+    document.getElementById('audioPanel').classList.remove('visible');
+    document.getElementById('mdPreview').classList.remove('visible');
+    hideProgressUI();
+    currentAudioBlob = null;
+    updateTextMeta();
+    setStatus('info', 'Bereit.');
+  }
+
+  // ── MODEL CHANGE ──
+  function onModelChange() {
+    const model = document.getElementById('modelSelect').value;
+    document.getElementById('modelLockNotice').classList.toggle('visible', model !== 'gpt-4o-mini-tts');
+    updateModelInfo();
+    saveSettings();
+  }
+
+  // ── PRESETS ──
+  const PRESETS = {
+    custom: { tag: 'Eigene Konfiguration', text: '' },
+    scholar: {
+      tag: 'Akademisch · Sachbuch · Essay',
+      text: `Voice Affect: Calm, clear, and intellectually grounded; composed, neutral, and attentive, with quiet authority and no theatricality.
+Tone: Precise, thoughtful, and academically serious; articulate complex ideas accessibly while preserving nuance and rigor.
+Pacing: Measured and steady; slightly slower on dense passages, with deliberate emphasis on key terms, transitions, and argumentative structure.
+Delivery: Natural but disciplined; prioritize clarity, sentence architecture, and conceptual coherence over emotional expressiveness.
+Pronunciation: Crisp and careful; treat technical vocabulary, foreign terms, and citations with particular precision.
+Overall Impression: A well-prepared lecturer or scholar reading for understanding, not performance—focused, credible, and easy to follow.`,
+    },
+    narrator: {
+      tag: 'Roman · Kurzgeschichte · Belletristik',
+      text: `Voice Affect: Warm, immersive, and gently expressive; draw the listener into the story without overpowering the text.
+Tone: Inviting and literary; honor the author's voice while maintaining consistent flow across scenes.
+Pacing: Flexible and scene-aware; slow down for introspective or emotional moments, quicken during action or dialogue.
+Delivery: Naturalistic storytelling; subtle vocal color for characters without full character voices, let the prose breathe.
+Pronunciation: Clear and unhurried; give proper nouns, place names, and unusual vocabulary their full weight.
+Overall Impression: A skilled audiobook narrator—present but unobtrusive, serving the story above all.`,
+    },
+    news: {
+      tag: 'Artikel · Bericht · Nachrichtentext',
+      text: `Voice Affect: Professional, neutral, and authoritative; crisp and alert without being cold.
+Tone: Factual and direct; no editorializing, no emotional coloring, strict informational register.
+Pacing: Brisk but fully intelligible; moderate tempo with brief pauses at sentence boundaries and paragraph breaks.
+Delivery: Broadcast-standard clarity; stress key facts, figures, and names naturally as they occur.
+Pronunciation: Precise on names, places, organizations, and numbers.
+Overall Impression: A trusted news anchor or radio journalist—efficient, credible, and distraction-free.`,
+    },
+    meditation: {
+      tag: 'Geführte Meditation · Achtsamkeit',
+      text: `Voice Affect: Soft, unhurried, and deeply calming; a grounded presence that invites relaxation without inducing sleep.
+Tone: Gently encouraging and non-judgmental; each phrase lands with care and intention.
+Pacing: Slow and spacious; generous pauses between instructions, breath cues, and transitions—never rushed.
+Delivery: Smooth and continuous; avoid abrupt tonal shifts; guide the listener's attention inward with quiet confidence.
+Pronunciation: Gentle and rounded; soften consonants slightly; treat silence as part of the delivery.
+Overall Impression: An experienced meditation teacher—safe, present, and entirely focused on the listener's experience.`,
+    },
+    technical: {
+      tag: 'Dokumentation · Tutorial · Anleitung',
+      text: `Voice Affect: Clear, methodical, and reassuring; the voice of a patient expert walking someone through a process.
+Tone: Instructional and supportive; structured without being robotic, precise without being cold.
+Pacing: Step-by-step; pause clearly between numbered steps, code terms, and distinct instructions.
+Delivery: Consistent and predictable; emphasize action verbs, parameter names, and warnings.
+Pronunciation: Exact on technical terms, commands, and product names.
+Overall Impression: A clear-voiced senior developer or technical writer—methodical, every step lands.`,
+    },
+    conversational: {
+      tag: 'Dialog · Podcast · Informell',
+      text: `Voice Affect: Relaxed, engaged, and naturally warm; the voice of someone genuinely enjoying a good conversation.
+Tone: Friendly and informal; contractions are fine, light energy is welcome, but not performative.
+Pacing: Natural conversational rhythm; vary tempo slightly with the content, let ideas breathe.
+Delivery: Spontaneous-feeling but clear; occasional stress and emphasis that mirrors how a thoughtful person speaks.
+Pronunciation: Relaxed and natural; no over-articulation, but fully intelligible.
+Overall Impression: An engaging podcast host or articulate friend—approachable, warm, easy to spend time with.`,
+    },
+    dramatic: {
+      tag: 'Lyrik · Theater · Expressive Prosa',
+      text: `Voice Affect: Expressive, resonant, and intentional; full dynamic range in service of the text.
+Tone: Elevated and emotionally present; match the register of the material with authentic commitment.
+Pacing: Highly variable; let line breaks, punctuation, and emotional beats dictate breath and rhythm.
+Delivery: Performative but truthful; every choice should feel earned by the text, not imposed on it.
+Pronunciation: Rich and full; give each word its due weight; treat rhyme and meter with sensitivity.
+Overall Impression: A trained stage actor or spoken-word artist—fully inhabited, technically precise.`,
+    },
+  };
+
+  function applyPreset() {
+    const key = document.getElementById('presetSelect').value;
+    const p   = PRESETS[key];
+    if (!p) return;
+    document.getElementById('instructionsInput').value = p.text;
+    document.getElementById('presetTag').textContent   = p.tag;
+    saveSettings();
+  }
+
+  function onInstructionsEdit() {
+    const cur = document.getElementById('instructionsInput').value;
+    const hit = Object.keys(PRESETS).find(k => PRESETS[k].text === cur);
+    document.getElementById('presetSelect').value  = hit || 'custom';
+    document.getElementById('presetTag').textContent = hit ? PRESETS[hit].tag : 'Eigene Konfiguration';
+    saveSettings();
+  }
+
+  // ── SETTINGS PERSISTENCE (kein API Key) ──
+  function saveSettings() {
+    localStorage.setItem('tts_settings', JSON.stringify({
+      model:        document.getElementById('modelSelect').value,
+      voice:        document.getElementById('voiceSelect').value,
+      speed:        document.getElementById('speedRange').value,
+      format:       document.getElementById('formatSelect').value,
+      stripMd:      document.getElementById('stripMd').checked,
+      preset:       document.getElementById('presetSelect').value,
+      instructions: document.getElementById('instructionsInput').value,
+    }));
+    updateFooter();
+  }
+
+  function loadSettings() {
+    try {
+      const s = JSON.parse(localStorage.getItem('tts_settings') || 'null');
+      if (!s) return;
+      if (s.model)  document.getElementById('modelSelect').value  = s.model;
+      if (s.voice)  document.getElementById('voiceSelect').value  = s.voice;
+      if (s.speed)  document.getElementById('speedRange').value   = s.speed;
+      if (s.format) document.getElementById('formatSelect').value = s.format;
+      if (s.stripMd !== undefined) {
+        document.getElementById('stripMd').checked = s.stripMd;
+        if (s.stripMd) document.getElementById('mdPreview').classList.add('visible');
+      }
+      if (s.preset) {
+        document.getElementById('presetSelect').value = s.preset;
+        const p = PRESETS[s.preset];
+        if (p) document.getElementById('presetTag').textContent = p.tag;
+      }
+      if (s.instructions !== undefined)
+        document.getElementById('instructionsInput').value = s.instructions;
+      if (s.model && s.model !== 'gpt-4o-mini-tts')
+        document.getElementById('modelLockNotice').classList.add('visible');
+    } catch (_) {}
+    updateSpeedDisplay();
+    updateModelInfo();
+    updateFormatNote();
+    updateFooter();
+  }
+
+  function updateFooter() {
+    const model  = document.getElementById('modelSelect').value;
+    const voice  = document.getElementById('voiceSelect').value;
+    const speed  = parseFloat(document.getElementById('speedRange').value).toFixed(2);
+    const format = document.getElementById('formatSelect').value;
+    const info   = MODEL_INFO[model];
+    const price  = info ? ` · $${info.pricePerMChar.toFixed(2)}/1M` : '';
+    document.getElementById('footerSettings').textContent =
+      `${model}${price} · ${voice} · ${speed}× · ${format}`;
+  }
+
+  // ── HILFSFUNKTIONEN ──
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
