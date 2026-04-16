@@ -1,0 +1,23 @@
+{
+  "_comment": "Vorlage für das TTS Studio Plugin-System. Kopiere diese Datei, fülle sie aus und lade sie lokal in die App. Committe die ausgefüllte Datei NICHT ins Repo.",
+
+  "plugin_id": "mein-lokaler-server",
+  "name": "Mein lokaler TTS-Server",
+  "description": "Kurze Beschreibung des Servers / der Engine",
+  "endpoint": "http://localhost:7734",
+  "api_path": "/tts",
+  "chunk_size": 1500,
+
+  "voices": [
+    {
+      "id":   "voice-id-1",
+      "name": "Stimme 1 (Sprache)",
+      "lang": "de"
+    },
+    {
+      "id":   "voice-id-2",
+      "name": "Stimme 2 (Sprache)",
+      "lang": "en"
+    }
+  ]
+}
