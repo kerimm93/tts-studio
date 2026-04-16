@@ -264,6 +264,57 @@
 
     footer { border-top: 1px solid var(--border); padding-top: 12px; font-size: 10px; color: var(--text-2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
+    /* ── EXPORT / SPLIT PANEL ── */
+    .export-panel {
+      background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-top: 14px; display: none;
+    }
+    .export-panel.visible { display: block; }
+
+    .split-mode-row {
+      display: flex; gap: 6px; margin-bottom: 12px;
+    }
+    .split-mode-btn {
+      flex: 1; padding: 7px 10px; font-family: var(--font); font-size: 10px;
+      font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      background: var(--bg-3); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text-2); cursor: pointer;
+      transition: all var(--transition);
+    }
+    .split-mode-btn:hover { border-color: var(--border-lit); color: var(--text-1); }
+    .split-mode-btn.active {
+      background: var(--accent-glow); border-color: var(--accent-dim); color: var(--accent);
+    }
+
+    .split-preview {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px 11px; font-size: 10px;
+      color: var(--text-2); line-height: 1.7; margin-top: 10px;
+    }
+    .split-preview-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .split-preview-row + .split-preview-row { margin-top: 2px; }
+    .split-part-list {
+      margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border);
+      max-height: 120px; overflow-y: auto;
+    }
+    .split-part-item {
+      display: flex; justify-content: space-between; font-size: 9px;
+      padding: 2px 0; color: var(--text-2);
+    }
+    .split-part-item span:first-child { color: var(--text-1); }
+
+    /* ZIP progress */
+    .zip-progress {
+      display: none; margin-top: 12px;
+    }
+    .zip-progress.visible { display: block; }
+    .zip-part-status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; color: var(--text-1); margin-top: 4px;
+    }
+
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-0); }
     ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
@@ -324,6 +375,65 @@
         </div>
         <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
         <div class="progress-chunks" id="progressChunks"></div>
+      </div>
+
+      <!-- Export / Split Panel (erscheint nach Analyse) -->
+      <div class="export-panel" id="exportPanel">
+        <div class="panel-head"><div class="dot"></div>Export &amp; Splitting</div>
+        <div class="panel-body">
+
+          <!-- Mode toggle -->
+          <label>Split-Modus</label>
+          <div class="split-mode-row">
+            <button class="split-mode-btn active" id="modeNone"   onclick="setSplitMode('none')">Keine Aufteilung</button>
+            <button class="split-mode-btn"         id="modeTime"   onclick="setSplitMode('time')">Nach Zeit</button>
+            <button class="split-mode-btn"         id="modeChapter" onclick="setSplitMode('chapter')">Nach Kapitel</button>
+          </div>
+
+          <!-- Zeit-Split Optionen -->
+          <div id="timeSplitOpts" style="display:none;">
+            <label>Part-Länge (Minuten)</label>
+            <select id="partMinutes" onchange="updateSplitPreview()">
+              <option value="30">30 Minuten</option>
+              <option value="60" selected>60 Minuten</option>
+              <option value="90">90 Minuten</option>
+              <option value="120">120 Minuten</option>
+            </select>
+            <div style="font-size:10px;color:var(--text-2);margin-top:5px;">
+              Schätzung: ~900 Zeichen/Minute bei 1.0× Tempo.
+            </div>
+          </div>
+
+          <!-- Kapitel-Split Info -->
+          <div id="chapterSplitOpts" style="display:none;">
+            <div style="font-size:10px;color:var(--text-2);">
+              Teilt an <code style="color:var(--accent-dim);"># Überschriften</code> (Markdown H1). Markdown wird erst nach dem Split entfernt — der Sprechtext enthält keine Formatierungen.
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="split-preview" id="splitPreview">
+            <div class="split-preview-row">
+              <span>Modus</span><span id="previewMode" style="color:var(--text-0);">Keine Aufteilung</span>
+            </div>
+            <div class="split-preview-row">
+              <span>Teile</span><span id="previewParts" style="color:var(--text-0);">1</span>
+            </div>
+            <div class="split-preview-row">
+              <span>Geschätzte Gesamtdauer</span><span id="previewDuration" style="color:var(--accent);">—</span>
+            </div>
+            <div class="split-part-list" id="splitPartList"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ZIP Progress (multi-part) -->
+      <div class="zip-progress" id="zipProgress">
+        <div class="panel-head" style="background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+          <div class="dot" style="background:var(--accent);animation:pulse 0.8s ease-in-out infinite;"></div>
+          <span id="zipProgressLabel">Part 0 / 0 wird konvertiert…</span>
+        </div>
       </div>
 
       <!-- Status + Audio -->
@@ -525,6 +635,7 @@
 
       <!-- Action Buttons -->
       <div class="gap">
+        <button class="btn btn-secondary btn-full" id="analyseBtn" onclick="analyseText()" style="margin-bottom:6px;">⬡ Text analysieren</button>
         <button class="btn btn-primary btn-full" id="convertBtn" onclick="startConvert()">▶ Konvertieren</button>
         <button class="btn btn-danger btn-full" id="cancelBtn" style="margin-top:6px;display:none;" onclick="cancelConvert()">✕ Abbrechen</button>
         <button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="clearAll()">✕ Alles leeren</button>
@@ -970,111 +1081,7 @@
     return res.blob();
   }
 
-  // ── MAIN CONVERT ──
-  async function startConvert() {
-    const provider     = currentProvider();
-    const rawText      = document.getElementById('textInput').value.trim();
-    const speed        = parseFloat(document.getElementById('speedRange').value);
-    const format       = document.getElementById('formatSelect').value;
-    const doStrip      = document.getElementById('stripMd').checked;
-
-    // Provider-spezifische Validierung
-    if (provider === 'openai') {
-      const apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey)                    { setStatus('error', 'Kein API-Key eingegeben.'); return; }
-      if (!apiKey.startsWith('sk-')) { setStatus('error', 'API-Key muss mit "sk-" beginnen.'); return; }
-    } else {
-      if (!activePlugin) { setStatus('error', 'Kein Plugin geladen. Plugin-JSON-Datei auswählen.'); return; }
-    }
-    if (!rawText) { setStatus('error', 'Kein Text eingegeben.'); return; }
-
-    const text = doStrip ? stripMarkdown(rawText) : rawText;
-    if (!text) { setStatus('error', 'Nach Markdown-Entfernung ist kein Text übrig.'); return; }
-
-    const chunkSz = (provider === 'plugin' && activePlugin?.chunk_size)
-                    ? activePlugin.chunk_size : CHUNK_SIZE;
-    const chunks  = splitTextToChunks(text, chunkSz);
-
-    document.getElementById('convertBtn').disabled     = true;
-    document.getElementById('cancelBtn').style.display = 'block';
-    document.getElementById('audioPanel').classList.remove('visible');
-    cancelRequested = false;
-
-    // Provider-Parameter sammeln
-    const apiKey       = document.getElementById('apiKey').value.trim();
-    const model        = document.getElementById('modelSelect').value;
-    const voice        = provider === 'plugin'
-                         ? document.getElementById('pluginVoiceSelect').value
-                         : document.getElementById('voiceSelect').value;
-    const instructions = document.getElementById('instructionsInput').value.trim();
-
-    // ── SINGLE CHUNK ──
-    if (chunks.length === 1) {
-      hideProgressUI();
-      setStatus('loading', `Konvertiere · ${voice} · ${speed}×…`);
-      try {
-        const blob = provider === 'plugin'
-          ? await callPlugin(chunks[0], voice, format, speed)
-          : await callOpenAI(apiKey, chunks[0], model, voice, speed, format, instructions);
-        finalizeAudio([blob], format, model, voice, speed, text.length, provider);
-      } catch (err) {
-        setStatus('error', err.message);
-      } finally {
-        resetConvertUI();
-      }
-      return;
-    }
-
-    // ── MULTI-CHUNK ──
-    initProgressUI(chunks.length);
-    setStatus('loading', `${chunks.length} Chunks werden verarbeitet…`);
-
-    const blobs  = [];
-    let   errors = 0;
-
-    for (let i = 0; i < chunks.length; i++) {
-      if (cancelRequested) {
-        setStatus('info', `Abgebrochen nach ${i} / ${chunks.length} Chunks.`);
-        hideProgressUI(); resetConvertUI(); return;
-      }
-      updateProgressUI(i, i, chunks.length, errors);
-      setStatus('loading', `Chunk ${i + 1} / ${chunks.length} · ${chunks[i].length} Zeichen…`);
-
-      try {
-        const blob = provider === 'plugin'
-          ? await callPlugin(chunks[i], voice, format, speed)
-          : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
-        blobs.push(blob);
-        updateProgressUI(i + 1, i + 1, chunks.length, errors);
-      } catch (err) {
-        if (err.message.includes('Rate-Limit')) {
-          errors++;
-          markPipError(i);
-          setStatus('loading', `Rate-Limit — warte 12s… (Chunk ${i + 1})`);
-          await sleep(12000);
-          if (cancelRequested) break;
-          try {
-            const blob = provider === 'plugin'
-              ? await callPlugin(chunks[i], voice, format, speed)
-              : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
-            blobs.push(blob); errors--;
-            if (document.getElementById(`pip-${i}`)) document.getElementById(`pip-${i}`).className = 'chunk-pip done';
-            updateProgressUI(i + 1, i + 1, chunks.length, errors);
-          } catch (retryErr) {
-            setStatus('error', `Chunk ${i + 1} auch nach Retry fehlgeschlagen: ${retryErr.message}`);
-            resetConvertUI(); return;
-          }
-        } else {
-          setStatus('error', `Fehler bei Chunk ${i + 1}: ${err.message}`);
-          markPipError(i); resetConvertUI(); return;
-        }
-      }
-      if (i < chunks.length - 1) await sleep(provider === 'plugin' ? 100 : 250);
-    }
-
-    finalizeAudio(blobs, format, model, voice, speed, text.length, provider);
-    resetConvertUI();
-  }
+  // ── MAIN CONVERT (see split/export system above) ──
 
   function finalizeAudio(blobs, format, model, voice, speed, charCount, provider) {
     const mime = { mp3: 'audio/mpeg', opus: 'audio/ogg', aac: 'audio/aac', flac: 'audio/flac', wav: 'audio/wav' }[format] || 'audio/mpeg';
@@ -1124,8 +1131,11 @@
     document.getElementById('textInput').value = '';
     document.getElementById('audioPanel').classList.remove('visible');
     document.getElementById('mdPreview').classList.remove('visible');
+    document.getElementById('exportPanel').classList.remove('visible');
+    document.getElementById('zipProgress').classList.remove('visible');
     hideProgressUI();
     currentAudioBlob = null;
+    currentParts     = [];
     updateTextMeta();
     setStatus('info', 'Bereit.');
   }
@@ -1280,6 +1290,367 @@ Overall Impression: A trained stage actor or spoken-word artist—fully inhabite
       const price  = info ? ` · $${info.pricePerMChar.toFixed(2)}/1M` : '';
       document.getElementById('footerSettings').textContent = `${model}${price} · ${voice} · ${speed}× · ${format}`;
     }
+  }
+
+  // ── SPLIT / EXPORT SYSTEM ──────────────────────────────────────────────────
+
+  let currentSplitMode = 'none';   // 'none' | 'time' | 'chapter'
+  let currentParts     = [];       // Array von { label, text (mit Markdown) }
+
+  // Zeichen pro Minute Schätzung bei 1.0× Tempo
+  const CHARS_PER_MINUTE = 900;
+
+  /** Wechselt den Split-Modus und aktualisiert UI */
+  function setSplitMode(mode) {
+    currentSplitMode = mode;
+    ['none','time','chapter'].forEach(m => {
+      document.getElementById('mode' + m.charAt(0).toUpperCase() + m.slice(1))
+        .classList.toggle('active', m === mode);
+    });
+    document.getElementById('timeSplitOpts').style.display    = mode === 'time'    ? '' : 'none';
+    document.getElementById('chapterSplitOpts').style.display = mode === 'chapter' ? '' : 'none';
+    updateSplitPreview();
+  }
+
+  /**
+   * Analysiert den Text und öffnet das Export-Panel.
+   * Zeigt Kapitel-Vorschau bzw. Zeit-Schätzung.
+   */
+  function analyseText() {
+    const raw = document.getElementById('textInput').value.trim();
+    if (!raw) { setStatus('error', 'Kein Text eingegeben.'); return; }
+
+    document.getElementById('exportPanel').classList.add('visible');
+    updateSplitPreview();
+    setStatus('info', 'Text analysiert. Split-Modus wählen und konvertieren.');
+  }
+
+  /** Berechnet Parts und aktualisiert die Vorschau */
+  function updateSplitPreview() {
+    const raw   = document.getElementById('textInput').value.trim();
+    if (!raw) return;
+
+    const speed = parseFloat(document.getElementById('speedRange').value) || 1.0;
+    const parts = computeParts(raw);
+    currentParts = parts;
+
+    // Gesamtdauer schätzen
+    const totalChars    = parts.reduce((s, p) => s + stripMarkdown(p.text).length, 0);
+    const totalMinutes  = (totalChars / CHARS_PER_MINUTE) / speed;
+    const durStr        = formatMinutes(totalMinutes);
+
+    document.getElementById('previewMode').textContent     = { none: 'Keine Aufteilung', time: 'Nach Zeit', chapter: 'Nach Kapitel (H1)' }[currentSplitMode];
+    document.getElementById('previewParts').textContent    = parts.length;
+    document.getElementById('previewDuration').textContent = durStr;
+
+    // Part-Liste
+    const listEl = document.getElementById('splitPartList');
+    listEl.innerHTML = '';
+    if (parts.length > 1) {
+      parts.forEach((p, i) => {
+        const chars   = stripMarkdown(p.text).length;
+        const mins    = (chars / CHARS_PER_MINUTE) / speed;
+        const row     = document.createElement('div');
+        row.className = 'split-part-item';
+        row.innerHTML = `<span>${i + 1}. ${escHtml(p.label.slice(0, 45))}${p.label.length > 45 ? '…' : ''}</span><span>~${formatMinutes(mins)}</span>`;
+        listEl.appendChild(row);
+      });
+    }
+  }
+
+  /**
+   * Berechnet die Parts basierend auf dem aktuellen Modus.
+   * Gibt Array von { label, text } zurück.
+   * text enthält noch Markdown — wird erst beim Konvertieren gestripped.
+   */
+  function computeParts(raw) {
+    if (currentSplitMode === 'chapter') {
+      return splitByH1(raw);
+    }
+    if (currentSplitMode === 'time') {
+      const minutes  = parseInt(document.getElementById('partMinutes').value) || 60;
+      const speed    = parseFloat(document.getElementById('speedRange').value) || 1.0;
+      const maxChars = Math.round(minutes * CHARS_PER_MINUTE * speed);
+      return splitByTime(raw, maxChars);
+    }
+    // none: ein einziger Part
+    return [{ label: 'Gesamt', text: raw }];
+  }
+
+  /**
+   * Teilt Text an H1-Überschriften (# Titel).
+   * Der Titel selbst wird als Label verwendet, aber NICHT gesprochen
+   * (er ist Teil des Markdown das später gestripped wird).
+   */
+  function splitByH1(raw) {
+    const lines    = raw.split('\n');
+    const h1Re     = /^#\s+(.*\S)\s*$/;
+    const parts    = [];
+    let   title    = 'Vorwort';
+    let   buf      = [];
+
+    function flush() {
+      const content = buf.join('\n').trim();
+      if (content) parts.push({ label: title, text: content });
+      buf = [];
+    }
+
+    for (const line of lines) {
+      const m = h1Re.exec(line);
+      if (m) {
+        flush();
+        title = m[1];
+        buf.push(line);   // Überschrift bleibt im Text (wird beim Strip entfernt)
+      } else {
+        buf.push(line);
+      }
+    }
+    flush();
+
+    return parts.length > 0 ? parts : [{ label: 'Gesamt', text: raw }];
+  }
+
+  /**
+   * Teilt Text in Parts von max. maxChars Zeichen (gemessen am gesäuberten Text).
+   * Schneidet an Absatzgrenzen.
+   */
+  function splitByTime(raw, maxChars) {
+    // Absätze im Originaltext (mit Markdown)
+    const paragraphs = raw.split(/\n\n+/);
+    const parts      = [];
+    let   buf        = [];
+    let   bufChars   = 0;
+    let   partIndex  = 1;
+
+    for (const para of paragraphs) {
+      const clean = stripMarkdown(para).length;
+      if (bufChars + clean > maxChars && buf.length > 0) {
+        parts.push({ label: `Part ${partIndex}`, text: buf.join('\n\n') });
+        partIndex++;
+        buf      = [para];
+        bufChars = clean;
+      } else {
+        buf.push(para);
+        bufChars += clean;
+      }
+    }
+    if (buf.length > 0) {
+      parts.push({ label: `Part ${partIndex}`, text: buf.join('\n\n') });
+    }
+    return parts.length > 0 ? parts : [{ label: 'Gesamt', text: raw }];
+  }
+
+  /** Formatiert Minuten als "1h 23min" oder "45min" */
+  function formatMinutes(mins) {
+    if (!isFinite(mins) || mins <= 0) return '—';
+    const h = Math.floor(mins / 60);
+    const m = Math.round(mins % 60);
+    return h > 0 ? `${h}h ${m}min` : `${m}min`;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── ZIP-HELPER (JSZip-frei: einzelne Blobs via Download-Link) ─────────────
+  /**
+   * Konvertiert mehrere Parts und lädt sie als einzelne Dateien herunter.
+   * Da JSZip keine Abhängigkeit sein soll, triggern wir mehrere Downloads.
+   * Browser erlaubt das für <= ~10 Dateien; bei mehr wird geblockt.
+   * Für viele Parts: sequenziell mit kurzer Pause.
+   */
+  async function downloadMultipleParts(partBlobs, format, baseName) {
+    for (let i = 0; i < partBlobs.length; i++) {
+      const { label, blob } = partBlobs[i];
+      const safeName = label.replace(/[^a-zA-Z0-9äöüÄÖÜß\-_\s]/g, '').replace(/\s+/g, '_').slice(0, 60);
+      const filename = `${baseName}_${String(i + 1).padStart(2, '0')}_${safeName}.${format}`;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      await sleep(400);   // kurze Pause damit Browser nicht blockt
+    }
+  }
+
+  // ── MODIFIED startConvert: berücksichtigt Parts ───────────────────────────
+
+  async function startConvert() {
+    const provider     = currentProvider();
+    const rawText      = document.getElementById('textInput').value.trim();
+    const speed        = parseFloat(document.getElementById('speedRange').value);
+    const format       = document.getElementById('formatSelect').value;
+    const doStrip      = document.getElementById('stripMd').checked;
+
+    if (provider === 'openai') {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey)                    { setStatus('error', 'Kein API-Key eingegeben.'); return; }
+      if (!apiKey.startsWith('sk-')) { setStatus('error', 'API-Key muss mit "sk-" beginnen.'); return; }
+    } else {
+      if (!activePlugin) { setStatus('error', 'Kein Plugin geladen.'); return; }
+    }
+    if (!rawText) { setStatus('error', 'Kein Text eingegeben.'); return; }
+
+    // Parts bestimmen
+    const parts = computeParts(rawText);
+    const isMultiPart = parts.length > 1;
+
+    document.getElementById('convertBtn').disabled     = true;
+    document.getElementById('cancelBtn').style.display = 'block';
+    document.getElementById('audioPanel').classList.remove('visible');
+    cancelRequested = false;
+
+    const apiKey       = document.getElementById('apiKey').value.trim();
+    const model        = document.getElementById('modelSelect').value;
+    const voice        = provider === 'plugin'
+                         ? document.getElementById('pluginVoiceSelect').value
+                         : document.getElementById('voiceSelect').value;
+    const instructions = document.getElementById('instructionsInput').value.trim();
+    const chunkSz      = (provider === 'plugin' && activePlugin?.chunk_size)
+                         ? activePlugin.chunk_size : CHUNK_SIZE;
+
+    const baseName = 'tts_' + new Date().toISOString().slice(0,10);
+
+    if (!isMultiPart) {
+      // ── SINGLE PART (bisherige Logik) ──
+      const text = doStrip ? stripMarkdown(rawText) : rawText;
+      if (!text) { setStatus('error', 'Kein Text nach Markdown-Bereinigung.'); resetConvertUI(); return; }
+
+      const chunks = splitTextToChunks(text, chunkSz);
+
+      if (chunks.length === 1) {
+        hideProgressUI();
+        setStatus('loading', `Konvertiere · ${voice} · ${speed}×…`);
+        try {
+          const blob = provider === 'plugin'
+            ? await callPlugin(chunks[0], voice, format, speed)
+            : await callOpenAI(apiKey, chunks[0], model, voice, speed, format, instructions);
+          finalizeAudio([blob], format, model, voice, speed, text.length, provider);
+        } catch (err) { setStatus('error', err.message); }
+        finally { resetConvertUI(); }
+        return;
+      }
+
+      // Multi-chunk single part
+      const blobs = await processChunks(chunks, provider, apiKey, model, voice, speed, format, instructions);
+      if (blobs) finalizeAudio(blobs, format, model, voice, speed, text.length, provider);
+      resetConvertUI();
+      return;
+    }
+
+    // ── MULTI-PART ──
+    hideProgressUI();
+    const zipProgress = document.getElementById('zipProgress');
+    zipProgress.classList.add('visible');
+
+    const partBlobs = [];
+
+    for (let pi = 0; pi < parts.length; pi++) {
+      if (cancelRequested) {
+        setStatus('info', `Abgebrochen nach Part ${pi} / ${parts.length}.`);
+        break;
+      }
+
+      const part = parts[pi];
+      document.getElementById('zipProgressLabel').textContent =
+        `Part ${pi + 1} / ${parts.length}: "${part.label.slice(0, 40)}"…`;
+
+      // Markdown NACH dem Split strippen
+      const text = stripMarkdown(part.text);
+      if (!text.trim()) continue;
+
+      const chunks = splitTextToChunks(text, chunkSz);
+      setStatus('loading', `Part ${pi + 1}/${parts.length} · ${chunks.length} Chunk(s) · ${text.length} Zeichen…`);
+
+      const blobs = await processChunks(chunks, provider, apiKey, model, voice, speed, format, instructions);
+      if (!blobs) { resetConvertUI(); zipProgress.classList.remove('visible'); return; }
+
+      const mime    = { mp3:'audio/mpeg', opus:'audio/ogg', aac:'audio/aac', flac:'audio/flac', wav:'audio/wav' }[format] || 'audio/mpeg';
+      const combined = new Blob(blobs, { type: mime });
+      partBlobs.push({ label: part.label, blob: combined });
+    }
+
+    zipProgress.classList.remove('visible');
+
+    if (partBlobs.length === 0) {
+      setStatus('error', 'Keine Parts konvertiert.');
+      resetConvertUI(); return;
+    }
+
+    if (partBlobs.length === 1) {
+      // Nur ein Part geworden (z.B. nach Cancel) → normaler Download
+      currentAudioBlob = partBlobs[0].blob;
+      currentFilename  = `${baseName}_${partBlobs[0].label}.${format}`.replace(/\s+/g,'_');
+      document.getElementById('audioPlayer').src = URL.createObjectURL(currentAudioBlob);
+      document.getElementById('audioInfo').textContent = `${format.toUpperCase()} · ${(currentAudioBlob.size/1024).toFixed(1)} KB`;
+      document.getElementById('audioPanel').classList.add('visible');
+      setStatus('success', `1 Part fertig.`);
+    } else {
+      // Mehrere Parts → sequenzieller Download
+      setStatus('loading', `${partBlobs.length} Parts werden heruntergeladen…`);
+      await downloadMultipleParts(partBlobs, format, baseName);
+      setStatus('success', `${partBlobs.length} Parts heruntergeladen.`);
+    }
+
+    resetConvertUI();
+  }
+
+  /**
+   * Verarbeitet ein Array von Text-Chunks und gibt Blobs zurück.
+   * Gibt null zurück wenn abgebrochen oder Fehler.
+   */
+  async function processChunks(chunks, provider, apiKey, model, voice, speed, format, instructions) {
+    if (chunks.length === 1) {
+      hideProgressUI();
+      try {
+        const blob = provider === 'plugin'
+          ? await callPlugin(chunks[0], voice, format, speed)
+          : await callOpenAI(apiKey, chunks[0], model, voice, speed, format, instructions);
+        return [blob];
+      } catch (err) { setStatus('error', err.message); return null; }
+    }
+
+    initProgressUI(chunks.length);
+    const blobs  = [];
+    let   errors = 0;
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (cancelRequested) return blobs.length > 0 ? blobs : null;
+
+      updateProgressUI(i, i, chunks.length, errors);
+      try {
+        const blob = provider === 'plugin'
+          ? await callPlugin(chunks[i], voice, format, speed)
+          : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
+        blobs.push(blob);
+        updateProgressUI(i + 1, i + 1, chunks.length, errors);
+      } catch (err) {
+        if (err.message.includes('Rate-Limit')) {
+          errors++;
+          markPipError(i);
+          setStatus('loading', `Rate-Limit — warte 12s… (Chunk ${i + 1})`);
+          await sleep(12000);
+          if (cancelRequested) return blobs.length > 0 ? blobs : null;
+          try {
+            const blob = provider === 'plugin'
+              ? await callPlugin(chunks[i], voice, format, speed)
+              : await callOpenAI(apiKey, chunks[i], model, voice, speed, format, instructions);
+            blobs.push(blob); errors--;
+            const pip = document.getElementById(`pip-${i}`);
+            if (pip) pip.className = 'chunk-pip done';
+            updateProgressUI(i + 1, i + 1, chunks.length, errors);
+          } catch (retryErr) {
+            setStatus('error', `Chunk ${i + 1} nach Retry fehlgeschlagen: ${retryErr.message}`);
+            return null;
+          }
+        } else {
+          setStatus('error', `Fehler bei Chunk ${i + 1}: ${err.message}`);
+          markPipError(i); return null;
+        }
+      }
+      if (i < chunks.length - 1) await sleep(provider === 'plugin' ? 100 : 250);
+    }
+    return blobs;
   }
 
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
